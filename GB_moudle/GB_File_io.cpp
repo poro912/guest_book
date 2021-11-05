@@ -1,6 +1,6 @@
 #include"GB_File_io.h"
 
-bool file_save(vector <PINFO>& info_vector, const wchar_t* name)
+bool file_save(vector <PINFO> & info_vector, const wchar_t* name)
 {
 	wchar_t path[100];
 	fstream fs;
