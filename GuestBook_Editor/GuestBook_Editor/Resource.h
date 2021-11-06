@@ -42,10 +42,10 @@
 
 // 팔레트
 #define Palette_x 730
-#define Palette_y 30
+#define Palette_y 35
 
 // 펜
-#define Pen_x 600
+#define Pen_x 500
 #define Pen_y 30
 #define Pen_width 200
 #define Pen_height 50
@@ -54,15 +54,15 @@
 // +버튼
 #define PLUS 1001
 #define PLUS_text L"+"	//┼로 출력시 오류
-#define PLUS_x 500
-#define PLUS_y 30
+#define PLUS_x 380
+#define PLUS_y 35
 #define PLUS_size 40
 
 // - 버튼
 #define MINUS 1002
 #define MINUS_text L"─"
-#define MINUS_x 500 
-#define MINUS_y 80
+#define MINUS_x 320 
+#define MINUS_y 35
 #define MINUS_size 40 
 
 /*

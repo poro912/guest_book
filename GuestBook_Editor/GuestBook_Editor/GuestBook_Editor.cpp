@@ -147,10 +147,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	//int x, y;
 	
 
-
 	switch (message)
 	{
+	case WM_GETMINMAXINFO: // 윈도우 창 크기 고정
+	{
+		((MINMAXINFO*)lParam)->ptMaxTrackSize.x = Window_Size_Width;
+		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = Window_Size_Height;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.x = Window_Size_Width;
+		((MINMAXINFO*)lParam)->ptMinTrackSize.y = Window_Size_Height;
+	}
+	break;
+
 	case WM_CREATE:
+	{
+		Center_Screen(hWnd, WS_OVERLAPPEDWINDOW, WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
 		g_hWnd = hWnd;
 		palette = new Palette(Palette_x, Palette_y);
 		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height);
@@ -161,48 +171,52 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		win_brush = CreateSolidBrush(WINDOW_COLOR);
 
 		//버튼 생성 및 할당
-		buttons.push_back(new GB_BUTTON(L"테스트",100, 50, 30, 150, 50));
+		buttons.push_back(new GB_BUTTON(L"테스트", 100, 50, 30, 150, 50));
 		buttons.push_back(new GB_BUTTON(L"┼", PLUS, PLUS_x, PLUS_y, PLUS_size));
 		buttons.push_back(new GB_BUTTON(MINUS_text, MINUS, MINUS_x, MINUS_y, MINUS_size));
-		break;
+	}
+	break;
+
 	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+		// 메뉴 선택을 구문 분석합니다:
+		switch (wmId)
 		{
-			int wmId = LOWORD(wParam);
-			// 메뉴 선택을 구문 분석합니다:
-			switch (wmId)
-			{
-			case IDM_ABOUT:
-				DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-				break;
-			case IDM_EXIT:
-				DestroyWindow(hWnd);
-				break;
-			default:
-				return DefWindowProc(hWnd, message, wParam, lParam);
-			}
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
-		break;
+	}
+	break;
+
 	case WM_PAINT:
-		{
-			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(hWnd, &ps);
-			// TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		// TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
 			
-			// 서명 영역 출력
-			paint_signed_area(hWnd, hdc);
-			// 팔레트 출력
-			palette->paint(hWnd, hdc);
-			// 펜 형태 출력
-			pen->paint(hWnd, hdc);
-			// 버튼 출력
+		// 서명 영역 출력
+		paint_signed_area(hWnd, hdc);
+		// 팔레트 출력
+		palette->paint(hWnd, hdc);
+		// 펜 형태 출력
+		pen->paint(hWnd, hdc);
+		// 버튼 출력
 
-			//btn_test->paint(hWnd, hdc);
-			for (const auto i : buttons)
-				i->paint(hWnd, hdc);
+		//btn_test->paint(hWnd, hdc);
+		for (const auto i : buttons)
+			i->paint(hWnd, hdc);
 
-			EndPaint(hWnd, &ps);
-		}
-		break;
+		EndPaint(hWnd, &ps);
+	}
+	break;
+
 	case WM_DESTROY:
 
 		delete(palette);
@@ -236,6 +250,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 	case WM_MOUSEMOVE:
+	{
+
+	}
+	
 	case WM_LBUTTONUP:
 		mouse_proc(hWnd, message, lParam, pen->size, pen->col);
 		break;
@@ -454,4 +472,14 @@ DWORD button_check(LPARAM lParam)
 			return msg;
 	}
 	return 0;
+}
+
+void Center_Screen(HWND window, DWORD style, DWORD exStyle)
+{
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	RECT clientRect; GetClientRect(window, &clientRect);
+	int clientWidth = clientRect.right - clientRect.left;
+	int clientHeight = clientRect.bottom - clientRect.top;
+	SetWindowPos(window, NULL, screenWidth / 2 - clientWidth / 2, screenHeight / 2 - clientHeight / 2 - 40, clientWidth, clientHeight, 0);
 }

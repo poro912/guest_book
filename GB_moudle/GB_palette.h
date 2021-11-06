@@ -6,12 +6,13 @@
 #include<ctime>
 
 // 파레트
-#define BTNS (sizeof(cols)/sizeof(COLORREF))        // 색상 버튼 갯수
-#define S_BTN_x 650     // 색상 버튼 시작 x위치
-#define S_BTN_y 30      // 색상 버튼 시작 y위치
-#define BTN_gap 3       // 버튼 간격
-#define BTN_size 35     // 버튼 크기
-
+#define BTNS (sizeof(cols)/sizeof(COLORREF))    // 색상 버튼 갯수
+#define S_BTN_x 650                             // 색상 버튼 시작 x위치
+#define S_BTN_y 30                              // 색상 버튼 시작 y위치
+#define BTN_gap 3                               // 버튼 간격
+#define BTN_size 35                             // 버튼 크기
+#define Window_Size_Width 1370                  //윈도우 넓이
+#define Window_Size_Height 700                  // 윈도우 높이
 #define WINDOW_COLOR RGB(230,230,230)
 
 static COLORREF cols[] = {
@@ -79,5 +80,4 @@ public:
     void set_size_down();
     int get_size();
     void paint(HWND hWnd, HDC hdc);
-    
 };

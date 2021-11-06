@@ -1,5 +1,6 @@
 // 모듈 전체에서 쓰이는 코드
 #pragma once
+#define _CRT_SECURE_NO_WARNINGS
 
 #include<vector>
 #include<Windows.h>
