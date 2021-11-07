@@ -20,6 +20,7 @@ Palette::Palette(int x, int y)
 
         btn.brsh = CreateSolidBrush(cols[i]);
         btn.col = cols[i];
+        
         btns.push_back(btn);
     }
     this->boundary_x = x + BTN_size;
@@ -47,7 +48,7 @@ Palette::~Palette()
         DeleteObject(i.brsh);
         DeleteObject(i.pen);
     }
-    
+    DeleteObject(this->pen);
     btns.clear();
 }
 
@@ -56,7 +57,9 @@ void Palette::paint(HWND hWnd, HDC hdc)
 {
     RECT temp;
     HBRUSH obrush;
-
+    HPEN open;
+    //this->pen = CreatePen(PS_SOLID, 2, RGB(192, 192, 192));
+    open = (HPEN)SelectObject(hdc, this->pen);
     obrush = (HBRUSH)SelectObject(hdc, btns[0].brsh);
     SelectObject(hdc, this->pen);
     for (auto i : btns)
@@ -70,7 +73,7 @@ void Palette::paint(HWND hWnd, HDC hdc)
     SelectObject(hdc, this->btn_ran.brsh);
     Rectangle(hdc, temp.left, temp.top, temp.right, temp.bottom);
     
-    
+    SelectObject(hdc, open);
     SelectObject(hdc, obrush);
 }
 
@@ -116,6 +119,13 @@ GB_Pen::GB_Pen(int x, int y, int width, int height)
     this->size = 10;
     this->area = RECT{ x, y, x + width, y + height };
 }
+GB_Pen::GB_Pen(int x, int y, int width, int height, int text_x, int text_y, int text_size) :GB_Pen(x, y, width, height)
+{
+    this->text_x = text_x;
+    this->text_y = text_y;
+    this->text_size = text_size;
+    this->text_area = RECT{ text_x, text_y, text_x + text_size + 10, text_y + text_size + 10 };
+}
 void GB_Pen::set_color(COLORREF col) 
 {
     this->col = col;
@@ -148,7 +158,7 @@ void GB_Pen::set_size_down()
         this->size -= 3;
     else if (this->size > 10)
         this->size -= 2;
-    else if (this->size > 0)
+    else if (this->size > 1)
         this->size -= 1;
     return;
 }
@@ -160,7 +170,6 @@ void GB_Pen::paint(HWND hWnd, HDC hdc)
 {
     HPEN npen, open;
     HBRUSH nbrush, obrush;
-    WCHAR pen_size[5];
     int x_start,x_end, y;
     
     nbrush = CreateSolidBrush(RGB(240,240,240));        //WINDOW_COLOR
@@ -183,4 +192,19 @@ void GB_Pen::paint(HWND hWnd, HDC hdc)
     DeleteObject(nbrush);
     SelectObject(hdc, open);
     DeleteObject(npen);
+}
+
+void GB_Pen::paint_text(HWND hWnd, HDC hdc)
+{
+    HFONT ofont, nfont;
+    WCHAR pen_size[5];
+
+    nfont = CreateFont(this->text_size, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET,
+        0, 0, 0, VARIABLE_PITCH | FF_ROMAN, TEXT("±¼¸²"));
+    ofont = (HFONT)SelectObject(hdc, nfont);
+    wsprintf(pen_size, L"%d", this->size);
+    TextOut(hdc, this->text_x, this->text_y, pen_size, lstrlen(pen_size));
+    
+    SelectObject(hdc, ofont);
+    DeleteObject(nfont);
 }

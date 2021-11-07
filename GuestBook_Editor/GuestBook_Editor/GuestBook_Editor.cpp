@@ -163,7 +163,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		Center_Screen(hWnd, WS_OVERLAPPEDWINDOW, WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
 		g_hWnd = hWnd;
 		palette = new Palette(Palette_x, Palette_y);
-		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height);
+		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height,Pen_text_x,Pen_text_y,Pen_size);
 
 		font = CreateFont(35, 0, 0, 0, 0, 0, 0, 0,
 			HANGEUL_CHARSET, 0, 0, 0,
@@ -207,11 +207,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		palette->paint(hWnd, hdc);
 		// 펜 형태 출력
 		pen->paint(hWnd, hdc);
+		pen->paint_text(hWnd, hdc);
+		
 		// 버튼 출력
-
-		//btn_test->paint(hWnd, hdc);
 		for (const auto i : buttons)
 			i->paint(hWnd, hdc);
+		//btn_test->paint(hWnd, hdc);
+
+		//이전의 그림 정보 출력
+		mouse_paint(hdc);
 
 		EndPaint(hWnd, &ps);
 	}
@@ -241,19 +245,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case PLUS:
 			pen->set_size_up();
 			InvalidateRect(hWnd, &pen->area, TRUE);
+			InvalidateRect(hWnd, &pen->text_area, TRUE);
 			break;
 		case MINUS:
 			pen->set_size_down();
 			InvalidateRect(hWnd, &pen->area, TRUE);
+			InvalidateRect(hWnd, &pen->text_area, TRUE);
 		default:
 			break;
 		}
 
 	case WM_MOUSEMOVE:
-	{
-
-	}
-	
 	case WM_LBUTTONUP:
 		mouse_proc(hWnd, message, lParam, pen->size, pen->col);
 		break;
@@ -459,6 +461,42 @@ void mouse_proc(HWND hWnd, UINT message, LPARAM lParam, int size, COLORREF col)
 	DeleteObject(open);
 	ReleaseDC(hWnd, hdc);
 	return;
+}
+
+void mouse_paint(HDC hdc)
+{
+	HPEN open, npen;
+	bool left = false;
+	int x, y;
+	npen = CreatePen(PS_SOLID,5,RGB(255, 255, 255));
+	open = (HPEN)SelectObject(hdc, npen);
+	DeleteObject(npen);
+	for (const auto& i : g_Pinfo)
+	{
+		x = LOWORD(i.lparm);
+		y = HIWORD(i.lparm);
+		switch (i.state)
+		{
+		case WM_LBUTTONDOWN:
+			npen = CreatePen(PS_SOLID, i.cWidth, i.color);
+			SelectObject(hdc, npen);
+			MoveToEx(hdc, x, y, NULL);
+			LineTo(hdc, x, y + 1);
+			left = true;
+			break;
+		case WM_MOUSEMOVE:
+			LineTo(hdc, x, y);
+			break;
+		case WM_LBUTTONUP:
+			left = false;
+			DeleteObject(npen);
+			break;
+		default:
+			break;
+		}
+	}
+	SelectObject(hdc, open);
+
 }
 
 // 버튼체크

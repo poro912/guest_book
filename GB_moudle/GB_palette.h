@@ -69,10 +69,15 @@ public:
     int width;
     int height;
     int size;
+    int text_x;
+    int text_y;
+    int text_size;
     COLORREF col;
     RECT area;
+    RECT text_area;
 
     GB_Pen(int x, int y, int width, int height);
+    GB_Pen(int x, int y, int width, int height, int text_x, int text_y, int text_size);
     void set_color(COLORREF col);
     COLORREF get_color();
     void set_size(int size);
@@ -80,4 +85,6 @@ public:
     void set_size_down();
     int get_size();
     void paint(HWND hWnd, HDC hdc);
+    void paint_text(HWND hWnd, HDC hdc);
 };
+

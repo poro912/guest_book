@@ -32,6 +32,8 @@
 
 // 새로 프로그램에서 사용할 상수값
 #define WINDOW_COLOR RGB(230,230,230)
+#define Window_Size_Width 1370                  //윈도우 넓이
+#define Window_Size_Height 700                  // 윈도우 높이
 
 
 // 서명 영역
@@ -41,7 +43,7 @@
 #define BOUNDARY_BOTTOM 600
 
 // 팔레트
-#define Palette_x 730
+#define Palette_x 735
 #define Palette_y 35
 
 // 펜
@@ -49,6 +51,9 @@
 #define Pen_y 30
 #define Pen_width 200
 #define Pen_height 50
+#define Pen_text_x 270
+#define Pen_text_y 40
+#define Pen_size 30		//폰트사이즈
 
 
 // +버튼
