@@ -145,6 +145,7 @@
     <ClInclude Include="..\..\GB_moudle\GB_FIle_io.h" />
     <ClInclude Include="..\..\GB_moudle\GB_moudles.h" />
     <ClInclude Include="..\..\GB_moudle\GB_palette.h" />
+    <ClInclude Include="..\..\GB_moudle\GB_Sscreen_Save.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GuestBook_Editor.h" />
     <ClInclude Include="Resource.h" />
@@ -155,6 +156,7 @@
     <ClCompile Include="..\..\GB_moudle\GB_Button.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_File_io.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_Palette.cpp" />
+    <ClCompile Include="..\..\GB_moudle\GB_Sscreen_Save.cpp" />
     <ClCompile Include="GuestBook_Editor.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -5,10 +5,9 @@
 #include "../../GB_moudle/GB_moudles.h"
 #include "../../GB_moudle/GB_palette.h"
 #include "../../GB_moudle/GB_Button.h"
+#include "../../GB_moudle/GB_Sscreen_Save.h"
 
 using namespace std;
-
-
 
 
 DWORD WINAPI drawing(LPVOID points);    // 리플레이 스레드

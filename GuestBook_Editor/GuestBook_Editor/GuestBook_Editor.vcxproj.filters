@@ -48,6 +48,9 @@
     <ClInclude Include="..\..\GB_moudle\GB_palette.h">
       <Filter>GB_moudle</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\GB_moudle\GB_Sscreen_Save.h">
+      <Filter>GB_moudle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GuestBook_Editor.cpp">
@@ -63,6 +66,9 @@
       <Filter>GB_moudle</Filter>
     </ClCompile>
     <ClCompile Include="..\..\GB_moudle\GB_Palette.cpp">
+      <Filter>GB_moudle</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GB_moudle\GB_Sscreen_Save.cpp">
       <Filter>GB_moudle</Filter>
     </ClCompile>
   </ItemGroup>

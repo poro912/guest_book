@@ -10,6 +10,7 @@
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
+bool ScrnSaveCheck = false;						// 화면이 보호중인지 체크합니다.
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -165,6 +166,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		palette = new Palette(Palette_x, Palette_y);
 		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height,Pen_text_x,Pen_text_y,Pen_size);
 
+		//SetTimer(hWnd, ScrnCheck_Timer, 1000, NULL);
+		SetTimer(hWnd, ScrnSave_Timer, 5000, NULL);
+
 		font = CreateFont(35, 0, 0, 0, 0, 0, 0, 0,
 			HANGEUL_CHARSET, 0, 0, 0,
 			VARIABLE_PITCH | FF_ROMAN, TEXT("굴림"));
@@ -220,6 +224,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 	}
 	break;
+	case WM_TIMER:
+	{
+		switch (wParam)
+		{
+		case ScrnSave_Timer:
+			ScrnSaveCheck = true; // 화면 보호중
+			ScrnSavePaint(0);
+			break;
+		}
+	}
+	break;
 
 	case WM_DESTROY:
 
@@ -256,6 +271,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 	case WM_MOUSEMOVE:
+	{
+		if (ScrnSaveCheck)
+		{
+			ScrnSaveCheck = false;
+			InvalidateRect(0, NULL, false);
+		}
+
+		ScrnTimer(hWnd);
+	}
 	case WM_LBUTTONUP:
 		mouse_proc(hWnd, message, lParam, pen->size, pen->col);
 		break;

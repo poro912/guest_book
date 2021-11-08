@@ -11,10 +11,12 @@
 #define S_BTN_y 30                              // 색상 버튼 시작 y위치
 #define BTN_gap 3                               // 버튼 간격
 #define BTN_size 35                             // 버튼 크기
+
+// 윈도우 설정 
 #define Window_Size_Width 1370                  //윈도우 넓이
 #define Window_Size_Height 700                  // 윈도우 높이
 #define WINDOW_COLOR RGB(230,230,230)
-
+#define Screen_Save_Timer 
 static COLORREF cols[] = {
                     RGB(0,0,0),         //검정
                     RGB(255,255,255),   //흰색
