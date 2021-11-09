@@ -31,7 +31,7 @@
 
 
 // 새로 프로그램에서 사용할 상수값
-#define WINDOW_COLOR RGB(230,230,230)
+#define WINDOW_COLOR RGB(248,248,248)
 #define Window_Size_Width 1370                  //윈도우 넓이
 #define Window_Size_Height 700                  // 윈도우 높이
 
@@ -51,7 +51,7 @@
 #define Pen_y 30
 #define Pen_width 200
 #define Pen_height 50
-#define Pen_text_x 270
+#define Pen_text_x 370
 #define Pen_text_y 40
 #define Pen_size 30		//폰트사이즈
 
@@ -59,16 +59,40 @@
 // +버튼
 #define PLUS 1001
 #define PLUS_text L"+"	//┼로 출력시 오류
-#define PLUS_x 380
+#define PLUS_x 420
 #define PLUS_y 35
 #define PLUS_size 40
 
 // - 버튼
 #define MINUS 1002
 #define MINUS_text L"─"
-#define MINUS_x 320 
+#define MINUS_x 315 
 #define MINUS_y 35
 #define MINUS_size 40 
+
+// CLEAR 버튼
+#define CLEAR 1003
+#define CLEAR_text L"CLEAR"
+#define CLEAR_x 50 
+#define CLEAR_y 35
+#define CLEAR_width 100
+#define CLEAR_height 40
+
+// REPLAY 버튼
+#define REPLAY 1004
+#define REPLAY_text L"REPLAY"
+#define REPLAY_x 160 
+#define REPLAY_y 35
+#define REPLAY_width 100
+#define REPLAY_height 40
+
+// RANDOM 버튼
+#define RANDOM 1005
+#define RANDOM_text L"RANDOM"
+#define RANDOM_x 1170
+#define RANDOM_y 75
+#define RANDOM_width 130
+#define RANDOM_height 40
 
 /*
 #define  

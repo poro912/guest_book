@@ -31,11 +31,13 @@ void GB_BUTTON::paint(HWND hWnd, HDC hdc)
 	
 	npen = CreatePen(PS_SOLID, 3, RGB(200, 200, 200));
 	nbrush = CreateSolidBrush(RGB(240, 240, 240));
-	nfont = CreateFont((this->height/3)*2, 0, 0, 0, FW_BOLD, 0, 0, 0,HANGEUL_CHARSET,
+	nfont = CreateFont((this->height/2), 0, 0, 0, FW_BOLD, 0, 0, 0,HANGEUL_CHARSET,
 		0, 0, 0,VARIABLE_PITCH | FF_ROMAN, TEXT("±¼¸²"));
 
-	x = this->x + (this->width / 2) - (this->height / 3) * (lstrlen(this->name)) ;
-	y = this->y + (this->height - (this->height / 3) * 2) / 2;
+	x = this->x + (this->width - ((this->height / 2) / 3 * 2 * lstrlen(this->name))) / 2;
+	//x = this->x + (this->width / 2) - (this->height / 3) * (lstrlen(this->name)) ;
+	//y = this->y + (this->height - (this->height / 3) * 2) / 2;
+	y = this->y + this->height / 5;
 	
 	open = (HPEN)SelectObject(hdc,npen);
 	obrush = (HBRUSH)SelectObject(hdc, nbrush);
@@ -43,7 +45,7 @@ void GB_BUTTON::paint(HWND hWnd, HDC hdc)
 	SetBkMode(hdc, TRANSPARENT);
 
 	Rectangle(hdc, this->area.left, this->area.top, this->area.right, this->area.bottom);
-	TextOut(hdc, x, y, this->name, lstrlen(this->name));
+	TextOut(hdc, x-4, y, this->name, lstrlen(this->name));
 
 	SelectObject(hdc, open);
 	SelectObject(hdc, obrush);
