@@ -127,9 +127,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 vector<PINFO> g_Pinfo;
 vector<GB_BUTTON *> buttons;
 HWND g_hWnd;
-bool is_replay = false;
 HBRUSH win_brush;
 HFONT font;
+bool is_replay = false;
+bool is_scrSave = false;
+
 //GB_BUTTON* btn_test = new GB_BUTTON(L"테스트", 50, 30, 150, 50);
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -140,7 +142,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static Palette* palette;
 	// PEN
 	static GB_Pen* pen;
-
+	static DWORD save_check;
 	//HDC hdc;
 	COLORREF ret;
 	//PINFO temp_pinfo;
@@ -156,15 +158,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = Window_Size_Height;
 		((MINMAXINFO*)lParam)->ptMinTrackSize.x = Window_Size_Width;
 		((MINMAXINFO*)lParam)->ptMinTrackSize.y = Window_Size_Height;
+		break;
 	}
-	break;
-
 	case WM_CREATE:
 	{
+		// 스크린 중앙 배치
 		Center_Screen(hWnd, WS_OVERLAPPEDWINDOW, WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
 		g_hWnd = hWnd;
 		palette = new Palette(Palette_x, Palette_y);
-		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height,Pen_text_x,Pen_text_y,Pen_size);
+		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height, Pen_text_x, Pen_text_y, Pen_size);
 
 		//SetTimer(hWnd, ScrnCheck_Timer, 1000, NULL);
 		SetTimer(hWnd, ScrnSave_Timer, 5000, NULL);
@@ -178,9 +180,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		buttons.push_back(new GB_BUTTON(L"테스트", 100, 50, 30, 150, 50));
 		buttons.push_back(new GB_BUTTON(L"┼", PLUS, PLUS_x, PLUS_y, PLUS_size));
 		buttons.push_back(new GB_BUTTON(MINUS_text, MINUS, MINUS_x, MINUS_y, MINUS_size));
+		break;
 	}
-	break;
-
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
@@ -196,15 +197,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
+		break;
 	}
-	break;
-
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
 		// TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-			
+
 		// 서명 영역 출력
 		paint_signed_area(hWnd, hdc);
 		// 팔레트 출력
@@ -212,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// 펜 형태 출력
 		pen->paint(hWnd, hdc);
 		pen->paint_text(hWnd, hdc);
-		
+
 		// 버튼 출력
 		for (const auto i : buttons)
 			i->paint(hWnd, hdc);
@@ -222,22 +222,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		mouse_paint(hdc);
 
 		EndPaint(hWnd, &ps);
+		break;
 	}
-	break;
 	case WM_TIMER:
 	{
 		switch (wParam)
 		{
 		case ScrnSave_Timer:
-			ScrnSaveCheck = true; // 화면 보호중
-			ScrnSavePaint(0);
+			
+			// 추후 상수화
+			
+			if (GetTickCount64() - save_check > 7000)
+			{
+				//스레드가 생성 되어있는지 확인
+				if (false)
+				{
+					// 만약 존재하지 않는 다면 새로 생성
+
+				}
+				ScrnSaveCheck = true; // 화면 보호중
+			}
+				
+			//ScrnSavePaint(hWnd);
 			break;
 		}
+		break;
 	}
-	break;
-
 	case WM_DESTROY:
-
 		delete(palette);
 
 		PostQuitMessage(0);
@@ -256,6 +267,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (button_check(lParam))
 		{
 		case 0:
+			break;
+		case 100:
+			//TEST 버튼
+			is_scrSave = true;
 			break;
 		case PLUS:
 			pen->set_size_up();
@@ -287,6 +302,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
+	//화면 보호기를 위한 최종 이벤트 시간 저장
+	save_check = GetTickCount64();
 	return 0;
 }
 
@@ -363,6 +380,54 @@ DWORD WINAPI drawing(LPVOID points)
 	is_replay = false;
 	return 0;
 }
+
+// 리플레이 스레드
+DWORD WINAPI Scr_Save_thread(LPVOID points)
+{
+	vector<PINFO> temp_pinfo;
+	int waitTime = 3000;
+	ULONGLONG temptime = GetTickCount64();
+	// 화면 영역을 전체 화면 영역으로 전환
+	// hWnd 0 에 전체영역으로 칠하기
+	
+	// 그대로 그리기 기능 실행
+	// 그리기 완성 시 3초 대기
+	temp_pinfo = g_Pinfo;
+
+	do {
+
+		// 그림 그리기 
+
+		while (GetTickCount64() - temptime > waitTime)	// 약 3초이상을 쉬는 코드
+		{
+			Sleep(1);
+			if (!is_scrSave)
+			{
+				//화면 원상 복귀
+				
+				InvalidateRect(0, NULL, true);
+				ExitThread(0);
+			}
+		}
+		
+		// 다음 그림 불러오기 temp_pinfo
+		temp_pinfo.clear();
+
+
+
+		// 파일 입출력으로 그릴 그림을 가져오기
+		// 다음 그림을 불러와서 그리기 시작
+		
+	} while(true);
+
+	
+
+	// 종료신호 발생 시 화면을 원래 크기로 전환하고 스레드 터미네이트
+
+	
+	return 0;
+}
+
 
 // 서명영역인지 반환해주는 함수
 bool is_area(LPARAM lParam)

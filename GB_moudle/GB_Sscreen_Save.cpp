@@ -8,7 +8,14 @@ void ScrnTimer(HWND hWnd)
 
 void ScrnSavePaint(HWND hWnd)
 {
-	HDC s_hdc = GetDC(hWnd);
-	Rectangle(s_hdc, 0, 0, 1920, 1030);
-	ReleaseDC(0, s_hdc);
+	RECT* window = {};
+	HDC hdc;
+
+
+
+	hdc = GetDC(0);
+	//GetWindowRect(0,window);
+
+	Rectangle(hdc, window->left,window->top,window->right,window->bottom);
+	ReleaseDC(0, hdc);
 }
