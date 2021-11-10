@@ -73,7 +73,7 @@
 // CLEAR 버튼
 #define CLEAR 1003
 #define CLEAR_text L"CLEAR"
-#define CLEAR_x 50 
+#define CLEAR_x 160
 #define CLEAR_y 35
 #define CLEAR_width 100
 #define CLEAR_height 40
@@ -81,7 +81,7 @@
 // REPLAY 버튼
 #define REPLAY 1004
 #define REPLAY_text L"REPLAY"
-#define REPLAY_x 160 
+#define REPLAY_x 50
 #define REPLAY_y 35
 #define REPLAY_width 100
 #define REPLAY_height 40

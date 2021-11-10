@@ -17,5 +17,5 @@ void mouse_proc(HWND hWnd, UINT message, LPARAM lParam, int size, COLORREF col);
 void mouse_paint(HDC hdc);
 DWORD button_check(LPARAM lParam);
 void Center_Screen(HWND window, DWORD style, DWORD exStyle); // Window 화면 가운데 위치로 옮기는 함수
-
+void Critical_flag(bool flag);
 

@@ -15,7 +15,11 @@
 // 윈도우 설정 
 #define Window_Size_Width 1370                  //윈도우 넓이
 #define Window_Size_Height 700                  // 윈도우 높이
+
+#ifndef WINDOW_COLOR
 #define WINDOW_COLOR RGB(230,230,230)
+#endif
+
 #define Screen_Save_Timer 
 static COLORREF cols[] = {
                     RGB(0,0,0),         //검정
@@ -46,7 +50,7 @@ typedef struct btn      //색상 버튼내용을 저장할 구조체
 class Palette
 {
 public:
-    btn btn_ran;
+    BTN btn_ran;
     COLORREF ran;
     HPEN pen;
     int x;

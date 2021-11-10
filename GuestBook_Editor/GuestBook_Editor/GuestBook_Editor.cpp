@@ -131,6 +131,10 @@ HBRUSH win_brush;
 HFONT font;
 bool is_replay = false;
 bool is_scrSave = false;
+bool is_terminate = false;
+
+// Thread
+HANDLE replay_thread = nullptr;
 
 //GB_BUTTON* btn_test = new GB_BUTTON(L"테스트", 50, 30, 150, 50);
 
@@ -142,7 +146,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static Palette* palette;
 	// PEN
 	static GB_Pen* pen;
-	static DWORD save_check;
+	static ULONGLONG save_check;
+	
+	
 	//HDC hdc;
 	COLORREF ret;
 	//PINFO temp_pinfo;
@@ -177,7 +183,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		win_brush = CreateSolidBrush(WINDOW_COLOR);
 
 		//버튼 생성 및 할당
-		buttons.push_back(new GB_BUTTON(L"테스트", 100, 50, 30, 150, 50));
+		buttons.push_back(new GB_BUTTON(L"테스트", 100, 50, 100, 150, 50));
 		buttons.push_back(new GB_BUTTON(L"┼", PLUS, PLUS_x, PLUS_y, PLUS_size));
 		buttons.push_back(new GB_BUTTON(MINUS_text, MINUS, MINUS_x, MINUS_y, MINUS_size));
 		buttons.push_back(new GB_BUTTON(CLEAR_text, CLEAR, CLEAR_x, CLEAR_y, CLEAR_width, CLEAR_height));
@@ -222,7 +228,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		//btn_test->paint(hWnd, hdc);
 
 		//이전의 그림 정보 출력
-		mouse_paint(hdc);
+		if(replay_thread == nullptr)
+			mouse_paint(hdc);
 
 		EndPaint(hWnd, &ps);
 		break;
@@ -274,6 +281,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case 100:
 			//TEST 버튼
 			is_scrSave = true;
+			break;
+		case REPLAY:
+			
+			if (replay_thread == nullptr)	// 생성되어있지 않다면
+			{
+				Critical_flag(false);
+				replay_thread = CreateThread(NULL, 0, drawing, nullptr, 0, NULL);
+			}
+			else
+				Critical_flag(true);
+			InvalidateRect(hWnd, NULL, true);
+			break;
+		case CLEAR:
+			if (replay_thread != nullptr)
+				Critical_flag(true);
+			g_Pinfo.clear();
+			InvalidateRect(hWnd, NULL, true);
+			break;
+		case RANDOM:
+			pen->set_color(palette->ChangeRand());
+			InvalidateRect(hWnd, &palette->btn_ran.rect, true);
+			InvalidateRect(hWnd, &pen->area, true);
 			break;
 		case PLUS:
 			pen->set_size_up();
@@ -342,13 +371,16 @@ DWORD WINAPI drawing(LPVOID points)
 	is_replay = true;
 
 	npen = CreatePen(PS_SOLID, 10, RGB(255, 255, 255));
-
 	while (true)
 	{
+		if (g_Pinfo.size() == 0) break;
+		if (is_terminate) break;
 		InvalidateRect(g_hWnd, NULL, TRUE);
 		for (size_t i = 0; i < (int)(g_Pinfo.size() - 1); i++)
 		{
-			if (g_Pinfo.size() == 0) break;
+			if (is_terminate)
+				break;
+			
 			switch (g_Pinfo[i].state)
 			{
 			case WM_LBUTTONDOWN:
@@ -361,13 +393,16 @@ DWORD WINAPI drawing(LPVOID points)
 				y = HIWORD(g_Pinfo[i].lparm);
 
 				MoveToEx(hdc, x, y, NULL);
-				LineTo(hdc, x + 1, y + 1);  //점찍기
+				LineTo(hdc, x, y + 1);  //점찍기
 				break;
 
 			case WM_MOUSEMOVE:
 				LineTo(hdc, LOWORD(g_Pinfo[i].lparm), HIWORD(g_Pinfo[i].lparm));
 				if (g_Pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
+				{
 					Sleep(g_Pinfo[i + 1].ctime - g_Pinfo[i].ctime);
+				}
+
 				break;
 			case WM_LBUTTONUP:
 				LineTo(hdc, LOWORD(g_Pinfo[i].lparm), HIWORD(g_Pinfo[i].lparm));
@@ -377,10 +412,22 @@ DWORD WINAPI drawing(LPVOID points)
 				break;
 			}
 		}
-		Sleep(3000);
+		// 0.01 초씩 쉬면서 스레드가 종료되는지 os 에서 확인
+
+		for (size_t i = 0; i < 300; i++)
+		{
+			Sleep(10);
+			if (is_terminate)
+				break;
+		}
+		
 	}
+
+	InvalidateRect(g_hWnd, NULL, TRUE);
+	DeleteObject(npen);
 	ReleaseDC(g_hWnd, hdc);
-	is_replay = false;
+	Critical_flag(false);
+	replay_thread = nullptr;
 	return 0;
 }
 
@@ -612,4 +659,18 @@ void Center_Screen(HWND window, DWORD style, DWORD exStyle)
 	int clientWidth = clientRect.right - clientRect.left;
 	int clientHeight = clientRect.bottom - clientRect.top;
 	SetWindowPos(window, NULL, screenWidth / 2 - clientWidth / 2, screenHeight / 2 - clientHeight / 2 - 40, clientWidth, clientHeight, 0);
+}
+
+
+// is_terminate 값 변경 임계영역
+void Critical_flag(bool flag)
+{
+	CRITICAL_SECTION cs;
+	/*if (is_terminate == flag)
+		return;*/
+	InitializeCriticalSection(&cs);
+	EnterCriticalSection(&cs);
+	is_terminate = flag;
+	LeaveCriticalSection(&cs);
+	DeleteCriticalSection(&cs);
 }
