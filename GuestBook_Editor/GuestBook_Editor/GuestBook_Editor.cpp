@@ -183,7 +183,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		win_brush = CreateSolidBrush(WINDOW_COLOR);
 
 		//버튼 생성 및 할당
-		buttons.push_back(new GB_BUTTON(L"테스트", 100, 50, 100, 150, 50));
+		buttons.push_back(new GB_BUTTON(L"테스트", 100, 50, 200, 150, 50));
 		buttons.push_back(new GB_BUTTON(L"┼", PLUS, PLUS_x, PLUS_y, PLUS_size));
 		buttons.push_back(new GB_BUTTON(MINUS_text, MINUS, MINUS_x, MINUS_y, MINUS_size));
 		buttons.push_back(new GB_BUTTON(CLEAR_text, CLEAR, CLEAR_x, CLEAR_y, CLEAR_width, CLEAR_height));
@@ -283,7 +283,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			is_scrSave = true;
 			break;
 		case REPLAY:
-			
 			if (replay_thread == nullptr)	// 생성되어있지 않다면
 			{
 				Critical_flag(false);
@@ -501,9 +500,15 @@ bool is_area(LPARAM lParam)
 void paint_signed_area(HWND hWnd, HDC hdc)
 {
 	HBRUSH nbrush, obrush;
-
+	HFONT nfont, ofont;
 	nbrush = CreateSolidBrush(WINDOW_COLOR);
 	obrush = (HBRUSH)SelectObject(hdc, nbrush);
+
+	nfont = CreateFont(35, 0, 0, 0, 0, 0, 0, 0,
+		HANGEUL_CHARSET, 0, 0, 0,
+		VARIABLE_PITCH | FF_ROMAN, TEXT("굴림"));
+
+	ofont = (HFONT)SelectObject(hdc, nfont);
 
 	SetBkColor(hdc, WINDOW_COLOR);  // TextOut의 배경색을 윈도우와 동일하게 변경
 	SetBkMode(hdc, OPAQUE);     // TextOut의 배경을 불투명으로 변경
@@ -515,7 +520,9 @@ void paint_signed_area(HWND hWnd, HDC hdc)
 	TextOut(hdc, BOUNDARY_LEFT + 15, BOUNDARY_TOP - 20, L"서명", lstrlenW(L"서명"));
 	
 	SelectObject(hdc, obrush);
-	DeleteObject(obrush);
+	SelectObject(hdc, ofont);
+	DeleteObject(nbrush);
+	DeleteObject(nfont);
 }
 
 
