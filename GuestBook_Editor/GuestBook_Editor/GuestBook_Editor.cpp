@@ -285,10 +285,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			OPENFILENAME OFN;
 			wchar_t file_name (200);
 			memset(&OFN, 0, sizeof(OFN));
+			/*
 			OFN.lStructSize(OFN);
 			OFN.hwndOwner = hWnd;
 			OFN.lpstrFilter = "모든 파일(*.*)\0*.*\0";
 			OFN.lpstrFile = file_name;
+			*/
 			GetOpenFileName(&OFN);
 
 			break;
