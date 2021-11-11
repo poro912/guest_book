@@ -17,3 +17,4 @@
 #include <ctime>
 #include <string>
 #include <tchar.h>
+#include <commdlg.h>	// 다이얼로그 관련 메소드

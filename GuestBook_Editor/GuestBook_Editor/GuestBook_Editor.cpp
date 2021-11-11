@@ -279,9 +279,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case 0:
 			break;
 		case 100:
+		{
 			//TEST 버튼
-			is_scrSave = true;
+			//is_scrSave = true;
+			OPENFILENAME OFN;
+			wchar_t file_name (200);
+			memset(&OFN, 0, sizeof(OFN));
+			OFN.lStructSize(OFN);
+			OFN.hwndOwner = hWnd;
+			OFN.lpstrFilter = "모든 파일(*.*)\0*.*\0";
+			OFN.lpstrFile = file_name;
+			GetOpenFileName(&OFN);
+
 			break;
+		}
 		case REPLAY:
 			if (replay_thread == nullptr)	// 생성되어있지 않다면
 			{
