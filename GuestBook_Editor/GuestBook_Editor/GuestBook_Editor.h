@@ -6,6 +6,7 @@
 #include "../../GB_moudle/GB_palette.h"
 #include "../../GB_moudle/GB_Button.h"
 #include "../../GB_moudle/GB_Sscreen_Save.h"
+#include "../../GB_moudle/GB_Image.h"
 
 using namespace std;
 

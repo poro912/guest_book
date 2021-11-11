@@ -16,6 +16,9 @@
     <Filter Include="GB_moudle">
       <UniqueIdentifier>{b6789f63-f395-40d8-ba75-2a1e03cc9b4a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GB_moudle\Image">
+      <UniqueIdentifier>{753cd8d7-9826-4c21-badd-1873fb0b21a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -51,6 +54,9 @@
     <ClInclude Include="..\..\GB_moudle\GB_Sscreen_Save.h">
       <Filter>GB_moudle</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\GB_moudle\GB_Image.h">
+      <Filter>GB_moudle</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GuestBook_Editor.cpp">
@@ -71,6 +77,9 @@
     <ClCompile Include="..\..\GB_moudle\GB_Sscreen_Save.cpp">
       <Filter>GB_moudle</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\GB_moudle\GB_Image.cpp">
+      <Filter>GB_moudle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GuestBook_Editor.rc">
@@ -83,6 +92,12 @@
     </Image>
     <Image Include="GuestBook_Editor.ico">
       <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="..\..\Image\Serve_logo.bmp">
+      <Filter>GB_moudle\Image</Filter>
+    </Image>
+    <Image Include="..\..\Image\Main_logo.bmp">
+      <Filter>GB_moudle\Image</Filter>
     </Image>
   </ItemGroup>
 </Project>

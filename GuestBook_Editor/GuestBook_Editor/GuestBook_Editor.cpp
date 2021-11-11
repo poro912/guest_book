@@ -189,6 +189,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		buttons.push_back(new GB_BUTTON(CLEAR_text, CLEAR, CLEAR_x, CLEAR_y, CLEAR_width, CLEAR_height));
 		buttons.push_back(new GB_BUTTON(REPLAY_text, REPLAY, REPLAY_x, REPLAY_y, REPLAY_width, REPLAY_height));
 		buttons.push_back(new GB_BUTTON(RANDOM_text, RANDOM, RANDOM_x, RANDOM_y, RANDOM_width, RANDOM_height));
+
 		break;
 	}
 	case WM_COMMAND:
@@ -214,10 +215,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		HDC hdc = BeginPaint(hWnd, &ps);
 		// TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
 
+
 		// 서명 영역 출력
 		paint_signed_area(hWnd, hdc);
+		// 로고 출력
+		Drawlogo(hInst, hdc, Main_Logo_X, Main_Logo_Y, Main_Logo_Width, Main_Logo_Height, Main_logo);
+		Drawlogo(hInst, hdc, Serve_Logo_X, Serve_Logo_Y, Serve_Logo_Width, Serve_Logo_Height, Serve_logo);
 		// 팔레트 출력
 		palette->paint(hWnd, hdc);
+
 		// 펜 형태 출력
 		pen->paint(hWnd, hdc);
 		pen->paint_text(hWnd, hdc);

@@ -148,6 +148,7 @@
     <ClInclude Include="..\..\GB_moudle\GB_Sscreen_Save.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GuestBook_Editor.h" />
+    <ClInclude Include="..\..\GB_moudle\GB_Image.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -155,6 +156,7 @@
     <ClCompile Include="..\..\GB_moudle\GB.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_Button.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_File_io.cpp" />
+    <ClCompile Include="..\..\GB_moudle\GB_Image.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_Palette.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_Sscreen_Save.cpp" />
     <ClCompile Include="GuestBook_Editor.cpp" />
@@ -163,6 +165,8 @@
     <ResourceCompile Include="GuestBook_Editor.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\Image\Main_logo.bmp" />
+    <Image Include="..\..\Image\Serve_logo.bmp" />
     <Image Include="GuestBook_Editor.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
