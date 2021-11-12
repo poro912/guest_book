@@ -51,9 +51,9 @@ void GB_BUTTON::paint(HWND hWnd, HDC hdc)
 	SelectObject(hdc, obrush);
 	SelectObject(hdc, ofont);
 
-	DeleteObject(open);
-	DeleteObject(obrush);
-	DeleteObject(ofont);
+	DeleteObject(npen);
+	DeleteObject(nbrush);
+	DeleteObject(nfont);
 }
 
 void GB_BUTTON::init(const wchar_t* name, DWORD handle, int x, int y, int width, int height)

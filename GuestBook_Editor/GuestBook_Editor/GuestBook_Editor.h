@@ -86,6 +86,7 @@ void Critical_flag(bool flag);
 #define RANDOM_width 130
 #define RANDOM_height 40
 
+
 /*
 #define
 #define _text L""

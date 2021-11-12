@@ -108,7 +108,6 @@ COLORREF Palette::ChangeRand() {
     return this->btn_ran.col;
 }
 
-
 GB_Pen::GB_Pen(int x, int y, int width, int height)
 {
     this->x = x;

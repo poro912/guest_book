@@ -133,6 +133,10 @@ bool is_replay = false;
 bool is_scrSave = false;
 bool is_terminate = false;
 
+int RainBow_R = 0;
+int RainBow_G = 0;
+int RainBow_B = 0;
+
 // Thread
 HANDLE replay_thread = nullptr;
 
@@ -190,6 +194,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		buttons.push_back(new GB_BUTTON(REPLAY_text, REPLAY, REPLAY_x, REPLAY_y, REPLAY_width, REPLAY_height));
 		buttons.push_back(new GB_BUTTON(RANDOM_text, RANDOM, RANDOM_x, RANDOM_y, RANDOM_width, RANDOM_height));
 
+		
 		break;
 	}
 	case WM_COMMAND:
@@ -203,6 +208,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
+			break;
+		case IDM_RainBow:
+		{
+			// Rainbow 펜 
+		}
 			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
@@ -412,6 +422,7 @@ DWORD WINAPI drawing(LPVOID points)
 
 				MoveToEx(hdc, x, y, NULL);
 				LineTo(hdc, x, y + 1);  //점찍기
+				DeleteObject(npen);
 				break;
 
 			case WM_MOUSEMOVE:
@@ -623,7 +634,7 @@ void mouse_proc(HWND hWnd, UINT message, LPARAM lParam, int size, COLORREF col)
 		break;
 	}
 
-	DeleteObject(open);
+	DeleteObject(npen);
 	ReleaseDC(hWnd, hdc);
 	return;
 }
