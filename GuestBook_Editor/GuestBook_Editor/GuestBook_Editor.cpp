@@ -124,7 +124,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 
 //전역 변수 선언
-vector<PINFO> g_Pinfo;
+//vector<PINFO> g_Pinfo;  g_SPinfo.pinfo
+SPINFO g_SPinfo;
 vector<GB_BUTTON *> buttons;
 HWND g_hWnd;
 HBRUSH win_brush;
@@ -174,6 +175,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		// 스크린 중앙 배치
 		Center_Screen(hWnd, WS_OVERLAPPEDWINDOW, WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
+		
 		g_hWnd = hWnd;
 		palette = new Palette(Palette_x, Palette_y);
 		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height, Pen_text_x, Pen_text_y, Pen_size);
@@ -194,7 +196,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		buttons.push_back(new GB_BUTTON(REPLAY_text, REPLAY, REPLAY_x, REPLAY_y, REPLAY_width, REPLAY_height));
 		buttons.push_back(new GB_BUTTON(RANDOM_text, RANDOM, RANDOM_x, RANDOM_y, RANDOM_width, RANDOM_height));
 
-		
+		g_SPinfo.x = BOUNDARY_LEFT;
+		g_SPinfo.y = BOUNDARY_TOP;
+		g_SPinfo.height = BOUNDARY_RIGHT - BOUNDARY_LEFT;
+		g_SPinfo.width = BOUNDARY_BOTTOM - BOUNDARY_TOP;
 		break;
 	}
 	case WM_COMMAND:
@@ -212,8 +217,65 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_RainBow:
 		{
 			// Rainbow 펜 
-		}
 			break;
+		}
+		case IDM_SAVE:
+		{
+			OPENFILENAME OFN;
+			wchar_t str[256] = { 0, };
+			wchar_t file_name[256] = { 0, };
+			memset(&OFN, 0, sizeof(OPENFILENAME));
+
+			OFN.lStructSize = sizeof(OPENFILENAME);
+			OFN.hwndOwner = hWnd;
+			OFN.lpstrFilter = L"모든 파일(*.*)\0*.*\0";
+			OFN.lpstrFile = file_name;
+			OFN.nMaxFile = 256;
+
+			if (GetSaveFileName(&OFN) != 0)
+			{
+				//wsprintf(str, L"%s파일을 선택했습니다.", OFN.lpstrFile);
+				//MessageBox(hWnd, str, L"파일 열기 성공", MB_OK);
+				wsprintf(str, L"%s", OFN.lpstrFile);
+				if(file_save(g_SPinfo, str))
+					MessageBox(hWnd, str, L"파일 저장 성공", MB_OK);
+				else
+					MessageBox(hWnd, L"실패", L"파일 저장 실패", MB_OK);
+			}
+			else
+			{
+				MessageBox(hWnd, L"실패", L"파일 저장 실패", MB_OK);
+			}
+			break;
+		}
+		case IDM_LOAD:
+		{
+			OPENFILENAME OFN;
+			wchar_t str[256] = { 0, };
+			wchar_t file_name[256] = { 0, };
+			memset(&OFN, 0, sizeof(OPENFILENAME));
+
+			OFN.lStructSize = sizeof(OPENFILENAME);
+			OFN.hwndOwner = hWnd;
+			OFN.lpstrFilter = L"모든 파일(*.*)\0*.*\0";
+			OFN.lpstrFile = file_name;
+			OFN.nMaxFile = 256;
+
+			if (GetOpenFileName(&OFN) != 0)
+			{
+				wsprintf(str, L"%s", OFN.lpstrFile);
+				if (file_load(g_SPinfo, str))
+					MessageBox(hWnd, str, L"파일 열기 성공", MB_OK);
+				else
+					MessageBox(hWnd, L"실패", L"파일 열기 실패", MB_OK);
+			}
+			else
+			{
+				MessageBox(hWnd, L"실패", L"파일 열기 실패", MB_OK);
+			}
+			InvalidateRect(NULL, NULL, true);
+			break;
+		}
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -324,7 +386,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case CLEAR:
 			if (replay_thread != nullptr)
 				Critical_flag(true);
-			g_Pinfo.clear();
+			g_SPinfo.pinfo.clear();
 			InvalidateRect(hWnd, NULL, true);
 			break;
 		case RANDOM:
@@ -401,24 +463,24 @@ DWORD WINAPI drawing(LPVOID points)
 	npen = CreatePen(PS_SOLID, 10, RGB(255, 255, 255));
 	while (true)
 	{
-		if (g_Pinfo.size() == 0) break;
+		if (g_SPinfo.pinfo.size() == 0) break;
 		if (is_terminate) break;
 		InvalidateRect(g_hWnd, NULL, TRUE);
-		for (size_t i = 0; i < (int)(g_Pinfo.size() - 1); i++)
+		for (size_t i = 0; i < (int)(g_SPinfo.pinfo.size() - 1); i++)
 		{
 			if (is_terminate)
 				break;
 			
-			switch (g_Pinfo[i].state)
+			switch (g_SPinfo.pinfo[i].state)
 			{
 			case WM_LBUTTONDOWN:
 				//MessageBox(hWnd, L"실행", L"L버튼", MB_OK);
 				DeleteObject(npen);
-				npen = CreatePen(PS_SOLID, g_Pinfo[i].cWidth, g_Pinfo[i].color);
+				npen = CreatePen(PS_SOLID, g_SPinfo.pinfo[i].cWidth, g_SPinfo.pinfo[i].color);
 				SelectObject(hdc, npen);
 
-				x = LOWORD(g_Pinfo[i].lparm);
-				y = HIWORD(g_Pinfo[i].lparm);
+				x = LOWORD(g_SPinfo.pinfo[i].lparm);
+				y = HIWORD(g_SPinfo.pinfo[i].lparm);
 
 				MoveToEx(hdc, x, y, NULL);
 				LineTo(hdc, x, y + 1);  //점찍기
@@ -426,15 +488,15 @@ DWORD WINAPI drawing(LPVOID points)
 				break;
 
 			case WM_MOUSEMOVE:
-				LineTo(hdc, LOWORD(g_Pinfo[i].lparm), HIWORD(g_Pinfo[i].lparm));
-				if (g_Pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
+				LineTo(hdc, LOWORD(g_SPinfo.pinfo[i].lparm), HIWORD(g_SPinfo.pinfo[i].lparm));
+				if (g_SPinfo.pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
 				{
-					Sleep(g_Pinfo[i + 1].ctime - g_Pinfo[i].ctime);
+					Sleep((DWORD)g_SPinfo.pinfo[i + 1].ctime - g_SPinfo.pinfo[i].ctime);
 				}
 
 				break;
 			case WM_LBUTTONUP:
-				LineTo(hdc, LOWORD(g_Pinfo[i].lparm), HIWORD(g_Pinfo[i].lparm));
+				LineTo(hdc, LOWORD(g_SPinfo.pinfo[i].lparm), HIWORD(g_SPinfo.pinfo[i].lparm));
 				break;
 
 			default:
@@ -471,7 +533,7 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 	
 	// 그대로 그리기 기능 실행
 	// 그리기 완성 시 3초 대기
-	temp_pinfo = g_Pinfo;
+	temp_pinfo = g_SPinfo.pinfo;
 
 	do {
 
@@ -596,7 +658,7 @@ void mouse_proc(HWND hWnd, UINT message, LPARAM lParam, int size, COLORREF col)
 		temp_pinfo.color = col;
 		temp_pinfo.cWidth = size;
 		temp_pinfo.ctime = (DWORD)GetTickCount64();
-		g_Pinfo.push_back(temp_pinfo);
+		g_SPinfo.pinfo.push_back(temp_pinfo);
 		break;
 
 	case WM_MOUSEMOVE:
@@ -615,7 +677,7 @@ void mouse_proc(HWND hWnd, UINT message, LPARAM lParam, int size, COLORREF col)
 			temp_pinfo.color = col;
 			temp_pinfo.cWidth = size;
 			temp_pinfo.ctime = (DWORD)GetTickCount64();
-			g_Pinfo.push_back(temp_pinfo);
+			g_SPinfo.pinfo.push_back(temp_pinfo);
 		}
 		break;
 
@@ -627,7 +689,7 @@ void mouse_proc(HWND hWnd, UINT message, LPARAM lParam, int size, COLORREF col)
 			temp_pinfo.color = col;
 			temp_pinfo.cWidth = size;
 			temp_pinfo.ctime = (DWORD)GetTickCount64();
-			g_Pinfo.push_back(temp_pinfo);
+			g_SPinfo.pinfo.push_back(temp_pinfo);
 		}
 
 		left = false;
@@ -647,7 +709,7 @@ void mouse_paint(HDC hdc)
 	npen = CreatePen(PS_SOLID,5,RGB(255, 255, 255));
 	open = (HPEN)SelectObject(hdc, npen);
 	DeleteObject(npen);
-	for (const auto& i : g_Pinfo)
+	for (const auto& i : g_SPinfo.pinfo)
 	{
 		x = LOWORD(i.lparm);
 		y = HIWORD(i.lparm);

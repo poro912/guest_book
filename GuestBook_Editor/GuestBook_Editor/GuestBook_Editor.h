@@ -7,6 +7,7 @@
 #include "../../GB_moudle/GB_Button.h"
 #include "../../GB_moudle/GB_Sscreen_Save.h"
 #include "../../GB_moudle/GB_Image.h"
+#include "../../GB_moudle/GB_FIle_io.h"
 
 using namespace std;
 
@@ -23,7 +24,9 @@ void Critical_flag(bool flag);
 #pragma once
 
 // 새로 프로그램에서 사용할 상수값
-#define WINDOW_COLOR RGB(248,248,248)
+#ifndef WINDOW_COLOR
+#define WINDOW_COLOR RGB(230,230,230)
+#endif
 #define Window_Size_Width 1370                  //윈도우 넓이
 #define Window_Size_Height 700                  // 윈도우 높이
 

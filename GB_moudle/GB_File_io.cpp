@@ -1,18 +1,24 @@
 #include"GB_File_io.h"
 
-bool file_save(vector <PINFO> & info_vector, const wchar_t* name)
+bool file_save(const SPINFO& info_vector, const wchar_t* path)
 {
-	wchar_t path[100];
+	//wchar_t path[256];
 	fstream fs;
 
-	wsprintf(path, L"%s/%s.txt", FILE_PATH, name);
 
-	MessageBox(0, path, L"저장 경로", MB_OK);
+	//MessageBox(0, path, L"저장 경로", MB_OK);
+
+	if (info_vector.pinfo.size() < 100)
+		return false;
 
 	fs.open(path, ios::out | ios::trunc);
 	if (fs.fail())	// 파일 열기에 실패한 경우
 		return false;
-	for (const auto& i : info_vector)
+	fs << info_vector.x << " ";
+	fs << info_vector.y << " ";
+	fs << info_vector.width << " ";
+	fs << info_vector.height << endl;
+	for (const auto& i : info_vector.pinfo)
 	{
 		fs << i.lparm << " ";
 		fs << i.cWidth << " ";
@@ -25,18 +31,22 @@ bool file_save(vector <PINFO> & info_vector, const wchar_t* name)
 }
 
 
-bool file_load(vector <PINFO>& info_vector, const wchar_t* name)
+bool file_load(SPINFO& info_vector, const wchar_t* path)
 {
-	wchar_t path[100];
+	//wchar_t path[100];
 	fstream fs;
 
-	wsprintf(path, L"%s/%s.txt", FILE_PATH, name);
+	//wsprintf(path, L"%s/%s.txt", FILE_PATH, name);
 
-	MessageBox(0, path, L"불러오기 경로", MB_OK);
+	//MessageBox(0, path, L"불러오기 경로", MB_OK);
 
-	fs.open(name, ios::in);
+	fs.open(path, ios::in);
 	if (fs.fail())	// 파일열기에 실패한 경우
 		return false;
+	fs >> info_vector.x;
+	fs >> info_vector.y;
+	fs >> info_vector.width;
+	fs >> info_vector.height;
 	while (!fs.eof())
 	{
 		PINFO temp;
@@ -45,7 +55,7 @@ bool file_load(vector <PINFO>& info_vector, const wchar_t* name)
 		fs >> temp.color;
 		fs >> temp.ctime;
 		fs >> temp.state;
-		info_vector.push_back(temp);
+		info_vector.pinfo.push_back(temp);
 	}
 	return true;
 }

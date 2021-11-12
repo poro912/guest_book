@@ -14,3 +14,11 @@ typedef struct point_info
     UINT            state;      //ป๓ลย{WM_LBUTTONDOWN }
 }PINFO;
 
+typedef struct scale_point_info
+{
+    std::vector<PINFO> pinfo;
+    int x;
+    int y;
+    int width;
+    int height;
+}SPINFO;
