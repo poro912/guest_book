@@ -99,5 +99,8 @@
     <Image Include="..\..\Image\Main_logo.bmp">
       <Filter>GB_moudle\Image</Filter>
     </Image>
+    <Image Include="..\..\Image\logo.bmp">
+      <Filter>리소스 파일</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -214,6 +214,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
+		case IDM_CREDITS:    //크레딧(C) 클릭시
+			DialogBox(hInst, MAKEINTRESOURCE(IDM_CREDITS), hWnd, About);
+			break;
+	 /* case IDC_NEXT:
+			MessageBox(hWnd,
+				TEXT("졸업을 축하합니다.\n")
+				TEXT("졸업을 축하합니다.\n")
+				TEXT("졸업을 축하합니다.\n"),
+				TEXT("선배님들께 드리는 편지"), MB_OK);
+			break;*/
 		case IDM_RainBow:
 		{
 			// Rainbow 펜 

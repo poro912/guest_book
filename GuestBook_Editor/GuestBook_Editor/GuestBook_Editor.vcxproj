@@ -165,6 +165,7 @@
     <ResourceCompile Include="GuestBook_Editor.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\Image\logo.bmp" />
     <Image Include="..\..\Image\Main_logo.bmp" />
     <Image Include="..\..\Image\Serve_logo.bmp" />
     <Image Include="GuestBook_Editor.ico" />
