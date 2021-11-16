@@ -3,7 +3,6 @@
 #pragma once
 #include "framework.h"
 #include "GuestBook_Editor.h"
-
 #define MAX_LOADSTRING 100
 
 // 전역 변수:
@@ -132,14 +131,22 @@ HBRUSH win_brush;
 HFONT font;
 bool is_replay = false;
 bool is_scrSave = false;
-bool is_terminate = false;
+
 
 int RainBow_R = 0;
 int RainBow_G = 0;
 int RainBow_B = 0;
 
+ULONGLONG scr_check_time;
+
 // Thread
 HANDLE replay_thread = nullptr;
+
+//CRITICAL
+CRITICAL_SECTION cs;
+bool is_terminate = false;
+CRITICAL_SECTION scr_cs;
+bool is_save = false;
 
 //GB_BUTTON* btn_test = new GB_BUTTON(L"테스트", 50, 30, 150, 50);
 
@@ -151,8 +158,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	static Palette* palette;
 	// PEN
 	static GB_Pen* pen;
-	static ULONGLONG save_check;
-	
+	static INT_PTR dialog= 0;
 	
 	//HDC hdc;
 	COLORREF ret;
@@ -200,6 +206,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		g_SPinfo.y = BOUNDARY_TOP;
 		g_SPinfo.height = BOUNDARY_RIGHT - BOUNDARY_LEFT;
 		g_SPinfo.width = BOUNDARY_BOTTOM - BOUNDARY_TOP;
+
+		// 임계 영역 설정
+		InitializeCriticalSection(&cs);
+		InitializeCriticalSection(&scr_cs);
+
+		scr_check_time = GetTickCount64();
+		CreateThread(NULL, 0, Scr_Save_thread, nullptr, 0, NULL);
 		break;
 	}
 	case WM_COMMAND:
@@ -214,9 +227,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
-		case IDM_CREDITS:    //크레딧(C) 클릭시
-			DialogBox(hInst, MAKEINTRESOURCE(IDM_CREDITS), hWnd, About);
+		case IDM_Screen_save:
+			Scr_Creitical_flag(true);
+			scr_check_time = 0;
 			break;
+		case IDM_CREDITS:    //크레딧(C) 클릭시
+		{
+			dialog = DialogBox(hInst, MAKEINTRESOURCE(IDM_CREDITS), hWnd, About);
+			break;
+		}
 	 /* case IDC_NEXT:
 			MessageBox(hWnd,
 				TEXT("졸업을 축하합니다.\n")
@@ -227,13 +246,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_RainBow:
 		{
 			// Rainbow 펜 
-			break;
+			return 0;
 		}
 		case IDM_SAVE:
 		{
 			OPENFILENAME OFN;
 			wchar_t str[256] = { 0, };
-			wchar_t file_name[256] = { 0, };
+			wchar_t file_name[256] = L"";
 			memset(&OFN, 0, sizeof(OPENFILENAME));
 
 			OFN.lStructSize = sizeof(OPENFILENAME);
@@ -241,6 +260,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			OFN.lpstrFilter = L"모든 파일(*.*)\0*.*\0";
 			OFN.lpstrFile = file_name;
 			OFN.nMaxFile = 256;
+			
 
 			if (GetSaveFileName(&OFN) != 0)
 			{
@@ -322,35 +342,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		EndPaint(hWnd, &ps);
 		break;
 	}
-	case WM_TIMER:
-	{
-		switch (wParam)
-		{
-		case ScrnSave_Timer:
-			
-			// 추후 상수화
-			
-			if (GetTickCount64() - save_check > 7000)
-			{
-				//스레드가 생성 되어있는지 확인
-				if (false)
-				{
-					// 만약 존재하지 않는 다면 새로 생성
-
-				}
-				ScrnSaveCheck = true; // 화면 보호중
-			}
-				
-			//ScrnSavePaint(hWnd);
-			break;
-		}
-		break;
-	}
-	case WM_DESTROY:
-		delete(palette);
-
-		PostQuitMessage(0);
-		break;
 
 	case WM_LBUTTONDOWN:
 		// 팔레트가 눌렸는지 확인
@@ -418,24 +409,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 	case WM_MOUSEMOVE:
-	{
-		if (ScrnSaveCheck)
-		{
-			ScrnSaveCheck = false;
-			InvalidateRect(0, NULL, false);
-		}
-
-		ScrnTimer(hWnd);
-	}
 	case WM_LBUTTONUP:
+		Scr_Creitical_flag(false);	// 마우스 관련 이벤트 발생시 false 로 만듦
+		scr_check_time = GetTickCount64();
 		mouse_proc(hWnd, message, lParam, pen->size, pen->col);
 		break;
 
+	case WM_DESTROY:
+		delete(palette);
+
+		DeleteCriticalSection(&cs);
+		DeleteCriticalSection(&scr_cs);
+		PostQuitMessage(0);
+		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
-	//화면 보호기를 위한 최종 이벤트 시간 저장
-	save_check = GetTickCount64();
 	return 0;
 }
 
@@ -499,10 +488,6 @@ DWORD WINAPI drawing(LPVOID points)
 
 			case WM_MOUSEMOVE:
 				LineTo(hdc, LOWORD(g_SPinfo.pinfo[i].lparm), HIWORD(g_SPinfo.pinfo[i].lparm));
-				if (g_SPinfo.pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
-				{
-					Sleep((DWORD)g_SPinfo.pinfo[i + 1].ctime - g_SPinfo.pinfo[i].ctime);
-				}
 
 				break;
 			case WM_LBUTTONUP:
@@ -512,8 +497,11 @@ DWORD WINAPI drawing(LPVOID points)
 			default:
 				break;
 			}
+			if (g_SPinfo.pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
+			{
+				Sleep(g_SPinfo.pinfo[i + 1].ctime - g_SPinfo.pinfo[i].ctime);
+			}
 		}
-		// 0.01 초씩 쉬면서 스레드가 종료되는지 os 에서 확인
 
 		for (size_t i = 0; i < 300; i++)
 		{
@@ -532,50 +520,79 @@ DWORD WINAPI drawing(LPVOID points)
 	return 0;
 }
 
-// 리플레이 스레드
+// 화면보호기 
 DWORD WINAPI Scr_Save_thread(LPVOID points)
 {
-	vector<PINFO> temp_pinfo;
-	int waitTime = 3000;
-	ULONGLONG temptime = GetTickCount64();
+	static vector<PINFO> temp_pinfo;
+	static HDC hdc;
 	// 화면 영역을 전체 화면 영역으로 전환
 	// hWnd 0 에 전체영역으로 칠하기
-	
+	//GetWindowRect(0, window);
 	// 그대로 그리기 기능 실행
 	// 그리기 완성 시 3초 대기
 	temp_pinfo = g_SPinfo.pinfo;
+	long long ti;
+	while (true)
+	{
+		while (GetTickCount64() - scr_check_time > SRC_TIME)
+		{
+			Scr_Creitical_flag(true);
+			hdc = GetDC(g_hWnd);
+
+			Rectangle(hdc, 0, 0, 400, 400);
+			ReleaseDC(g_hWnd, hdc);
+
+
+			if (!is_save)
+			{
+				InvalidateRect(0, NULL, true);
+				break;
+			}
+				
+		}
+	}
+
 
 	do {
-
-		// 그림 그리기 
-
-		while (GetTickCount64() - temptime > waitTime)	// 약 3초이상을 쉬는 코드
+		ti = GetTickCount64() - scr_check_time;
+		if ( ti + 100 < 10000) // 최근에 이벤트가 발생했으면 continue
 		{
-			Sleep(1);
-			if (!is_scrSave)
-			{
-				//화면 원상 복귀
-				
-				InvalidateRect(0, NULL, true);
-				ExitThread(0);
-			}
+			Sleep(100);
+			continue;
 		}
-		
-		// 다음 그림 불러오기 temp_pinfo
-		temp_pinfo.clear();
+			
+		Scr_Creitical_flag(true);
+		hdc = GetDC(g_hWnd);
+		Rectangle(hdc, 0, 0, 400, 400);
+		while (is_save)
+		{
+			if (GetTickCount64() - scr_check_time < SRC_TIME) // 최근에 이벤트가 발생했다면
+				Scr_Creitical_flag(false); // 종료
+			
+			for (const auto& i : g_SPinfo.pinfo)	// 그리는 부분
+			{
+				if (!is_save)
+					break;
+			}
 
+			while (GetTickCount64() - scr_check_time > 300)	// 3초 대기
+			{
+				Sleep(10);
+				if (!is_save)
+					break;
+			}
 
-
-		// 파일 입출력으로 그릴 그림을 가져오기
-		// 다음 그림을 불러와서 그리기 시작
-		
+			// 다음 그림 불러오기 temp_pinfo
+			temp_pinfo.clear();
+			if (!is_save)
+				break;
+			// 파일 입출력으로 그릴 그림을 가져오기
+			// 다음 그림을 불러와서 그리기 시작
+		}
+		// 종료신호 발생 시 화면을 원래 크기로 전환
+		InvalidateRect(0, NULL, true);
+		ReleaseDC(g_hWnd,hdc);
 	} while(true);
-
-	
-
-	// 종료신호 발생 시 화면을 원래 크기로 전환하고 스레드 터미네이트
-
-	
 	return 0;
 }
 
@@ -774,12 +791,20 @@ void Center_Screen(HWND window, DWORD style, DWORD exStyle)
 // is_terminate 값 변경 임계영역
 void Critical_flag(bool flag)
 {
-	CRITICAL_SECTION cs;
-	/*if (is_terminate == flag)
-		return;*/
-	InitializeCriticalSection(&cs);
+	if (is_terminate == flag)
+		return;
 	EnterCriticalSection(&cs);
 	is_terminate = flag;
 	LeaveCriticalSection(&cs);
-	DeleteCriticalSection(&cs);
+}
+
+void Scr_Creitical_flag(bool flag)
+{
+	if (is_save == flag)
+		return;
+	EnterCriticalSection(&scr_cs);
+	is_save = flag;
+	if (flag == true)
+		Critical_flag(true);
+	LeaveCriticalSection(&scr_cs);
 }

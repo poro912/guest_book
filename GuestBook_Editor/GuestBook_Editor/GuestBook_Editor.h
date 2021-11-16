@@ -13,6 +13,7 @@ using namespace std;
 
 
 DWORD WINAPI drawing(LPVOID points);    // 리플레이 스레드
+DWORD WINAPI Scr_Save_thread(LPVOID points);
 bool is_area(LPARAM lParam);            // 색칠 가능 영역인지 반환해주는 함수
 void paint_signed_area(HWND hWnd, HDC hdc);
 void mouse_proc(HWND hWnd, UINT message, LPARAM lParam, int size, COLORREF col);
@@ -20,6 +21,7 @@ void mouse_paint(HDC hdc);
 DWORD button_check(LPARAM lParam);
 void Center_Screen(HWND window, DWORD style, DWORD exStyle); // Window 화면 가운데 위치로 옮기는 함수
 void Critical_flag(bool flag);
+void Scr_Creitical_flag(bool flag);
 
 #pragma once
 
@@ -29,6 +31,8 @@ void Critical_flag(bool flag);
 #endif
 #define Window_Size_Width 1370                  //윈도우 넓이
 #define Window_Size_Height 700                  // 윈도우 높이
+
+#define SRC_TIME 3000
 
 
 // 서명 영역

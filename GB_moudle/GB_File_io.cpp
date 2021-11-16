@@ -43,6 +43,7 @@ bool file_load(SPINFO& info_vector, const wchar_t* path)
 	fs.open(path, ios::in);
 	if (fs.fail())	// 파일열기에 실패한 경우
 		return false;
+	info_vector.pinfo.clear();
 	fs >> info_vector.x;
 	fs >> info_vector.y;
 	fs >> info_vector.width;

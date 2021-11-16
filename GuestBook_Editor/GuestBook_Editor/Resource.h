@@ -7,7 +7,10 @@
 #define IDS_APP_TITLE                   103
 #define IDD_ABOUTBOX                    103
 #define IDM_ABOUT                       104
+#define IDD_DIALOGBAR                   104
+#define IDS_PROFESSOR                   104
 #define IDM_EXIT                        105
+#define IDS_OK                          105
 #define IDI_GUESTBOOKEDITOR             107
 #define IDI_SMALL                       108
 #define IDC_GUESTBOOKEDITOR             109
@@ -17,6 +20,7 @@
 #define IDB_BITMAP1                     132
 #define IDB_yuhanlogo                   132
 #define IDC_logo                        1000
+#define ids_ok                          1003
 #define ID_32771                        32771
 #define ID_32772                        32772
 #define ID_32773                        32773
@@ -26,6 +30,10 @@
 #define IDM_LOAD                        32778
 #define IDM_RAINBOW                     32780
 #define IDM_CREDITS                     32781
+#define ID_32782                        32782
+#define ID                              32783
+#define IDD                             32784
+#define IDM_Screen_save                 32785
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -34,8 +42,8 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        133
-#define _APS_NEXT_COMMAND_VALUE         32782
-#define _APS_NEXT_CONTROL_VALUE         1001
+#define _APS_NEXT_COMMAND_VALUE         32786
+#define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif
