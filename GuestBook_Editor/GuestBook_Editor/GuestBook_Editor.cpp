@@ -661,7 +661,7 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 	HBRUSH nbrush;
 	HPEN npen;
 	RECT win = {0,};
-
+	WCHAR path[255];
 	
 	HANDLE hFind;
 	WIN32_FIND_DATAW data = { 0, };
@@ -673,8 +673,8 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 	// 그리기 완성 시 3초 대기
 	temp_spinfo = g_SPinfo;
 	int x, y;
-
-
+	SetCurrentDirectory(L"..//..//page");
+	GetCurrentDirectory(255, path);
 	while (true)
 	{
 		while (GetTickCount64() - scr_check_time + 50 >= (long long)scr_save_time)
@@ -691,8 +691,11 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 			Sleep(200);
 
 			// 파일 받아오기
+			//GetCurrentDirectory()
+			SetCurrentDirectory(path);
+			//MessageBox(0, path, L"저장 경로", MB_OK);
 			file_list.clear();
-			hFind = FindFirstFileW(L"..//..//page//*", &data);
+			hFind = FindFirstFileW(L"*", &data);
 			FindNextFileW(hFind, &data);
 			//FindNextFileW(hFind, &data);
 			while (FindNextFileW(hFind, &data))
@@ -725,23 +728,19 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 
 				if (temp_spinfo.pinfo.size() == 0)// 화면 보호기가 작동하고 처음이라면 
 					temp_spinfo = g_SPinfo;
-
-				if (temp_spinfo.pinfo.empty())
+				else 
 				{
-					if (!file_list.empty())
-					{
-						int i = rand() % file_list.size();
-						WCHAR path[80];
-						wcscpy(path, FILE_PATH);
-						wcscat(path, L"/");
-						wcscat(path, file_list[i]);
-						file_load(temp_spinfo, path);
-					}
+					int i = rand() % file_list.size();
+					WCHAR path_temp[255];
+					wcscpy(path_temp, path);
+					wcscat(path_temp, L"\\");
+					wcscat(path_temp, file_list[i]);
+					file_load(temp_spinfo, path_temp);
 				}
 
 				if (!is_save) break;	// 화면 보호기 탈출
 				
-				if (!temp_spinfo.pinfo.empty())	// 화면또는 파일중 하나라도 있으면 출력
+				if (!temp_spinfo.pinfo.empty())	// 두가지를 받아왔을 경우에도 temp_spinfo가 비어 있다면 무한 대기
 				{
 					for (size_t i = 0; i < temp_spinfo.pinfo.size() - 1; i++)
 					{
@@ -1027,7 +1026,7 @@ void Critical_flag(bool flag)
 void Scr_Creitical_flag(bool flag)
 {
 	
-	if (is_save == true && flag == false)
+	if (flag == true)
 	{
 		EndDialog(End_Credit, LOWORD(1));
 	}
