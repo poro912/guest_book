@@ -726,9 +726,9 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 				SelectObject(hdc, npen);
 				Rectangle(hdc, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
-				if (temp_spinfo.pinfo.size() == 0)// 화면 보호기가 작동하고 처음이라면 
+				if (temp_spinfo.pinfo.size() == 0 && g_SPinfo.pinfo.size() != 0)// 화면 보호기가 작동하고 처음이라면 
 					temp_spinfo = g_SPinfo;
-				else 
+				else if (!file_list.empty())
 				{
 					int i = rand() % file_list.size();
 					WCHAR path_temp[255];
