@@ -231,7 +231,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case IDM_Screen_save:
 			Scr_Creitical_flag(true);
-			scr_check_time = GetTickCount64() - SRC_TIME;
+			scr_check_time = GetTickCount64() - scr_save_time;
 			Sleep(50);
 			return 0;
 		case IDM_CREDITS:    //크레딧(C) 클릭시
@@ -249,8 +249,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				KillTimer(hWnd, RAINBOW);
 				rainbow_timer = NULL;
 			}
-				
-
 			return 0;
 		}
 		case IDM_SAVE:
@@ -311,6 +309,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			InvalidateRect(NULL, NULL, true);
 			break;
 		}
+		case IDM_5s:
+			scr_save_time = 5 * 1000;
+			break;
+		case IDM_10s:
+			scr_save_time = 10 * 1000;
+			break;
+		case IDM_30s:
+			scr_save_time = 30 * 1000;
+			break;
+		case IDM_1min:
+			scr_save_time = 60 * 1000;
+			break;
+		case IDM_5min:
+			scr_save_time = 5 * 60 * 1000;
+			break;
+		case IDM_10min:
+			scr_save_time = 10 * 60 * 1000;
+			break;
+		case IDM_30min:
+			scr_save_time = 30 * 60 * 1000;
+			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -568,44 +587,96 @@ DWORD WINAPI drawing(LPVOID points)
 // 화면보호기 
 DWORD WINAPI Scr_Save_thread(LPVOID points)
 {
-	static vector<PINFO> temp_pinfo;
+	static SPINFO temp_spinfo;
 	static HDC hdc;
 	static RECT window = {0};
+	HBRUSH nbrush;
+	HPEN npen;
 	// 화면 영역을 전체 화면 영역으로 전환
 	// hWnd 0 에 전체영역으로 칠하기
 	//GetWindowRect(0, window);
 	// 그대로 그리기 기능 실행
 	// 그리기 완성 시 3초 대기
-	GetWindowRect(0, &window);
-	temp_pinfo = g_SPinfo.pinfo;
+	temp_spinfo = g_SPinfo;
 	long long ti;
+	int x, y;
+
 	while (true)
 	{
-		while (GetTickCount64() - scr_check_time+100 > SRC_TIME)
+		while (GetTickCount64() - scr_check_time >= scr_save_time)
 		{
 			Scr_Creitical_flag(true);
 			//hdc = GetDC(g_hWnd);
 			hdc = GetDC(0);
+			nbrush = CreateSolidBrush(WINDOW_COLOR);
+			npen = CreatePen(PS_SOLID, 1, WINDOW_COLOR);
+			SelectObject(hdc,nbrush);
+			SelectObject(hdc, npen);
+			Rectangle(hdc, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
 
-			Rectangle(hdc, 0, 0, window.right, window.bottom);
-			ReleaseDC(g_hWnd, hdc);
+			// 화면보호기 실행
+			while (true)
+			{
+				if (temp_spinfo.pinfo.size() == 0) break;
+				if (!is_save) break;
+				for (size_t i = 0; i < (int)(temp_spinfo.pinfo.size() - 1); i++)
+				{
+					if (is_terminate)
+						break;
 
-			// 기존 그림 그리기
-			
+					DeleteObject(npen);
+					npen = CreatePen(PS_SOLID, temp_spinfo.pinfo[i].cWidth, temp_spinfo.pinfo[i].color);
+					SelectObject(hdc, npen);
+
+					switch (temp_spinfo.pinfo[i].state)
+					{
+					case WM_LBUTTONDOWN:
+						x = LOWORD(temp_spinfo.pinfo[i].lparm);
+						y = HIWORD(temp_spinfo.pinfo[i].lparm);
+
+						MoveToEx(hdc, x, y, NULL);
+						LineTo(hdc, x, y + 1);
+						break;
+
+					case WM_MOUSEMOVE:
+						LineTo(hdc, LOWORD(temp_spinfo.pinfo[i].lparm), HIWORD(temp_spinfo.pinfo[i].lparm));
+
+						break;
+					case WM_LBUTTONUP:
+						LineTo(hdc, LOWORD(temp_spinfo.pinfo[i].lparm), HIWORD(temp_spinfo.pinfo[i].lparm));
+						break;
+
+					default:
+						break;
+					}
+					if (temp_spinfo.pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
+					{
+						Sleep(temp_spinfo.pinfo[i + 1].ctime - temp_spinfo.pinfo[i].ctime);
+					}
+				}
+			}
 			// 랜덤으로 파일 받아오기
 
 			// 3초 기다리기
-
+			for (size_t i = 0; i < 30; i++)
+			{
+				Sleep(100);
+				if (!is_save)
+					break;
+			}
 			if (!is_save)
 			{
 				InvalidateRect(0, NULL, true);
 				break;
 			}
 			//temp_pinfo =
+			DeleteObject(nbrush);
+			DeleteObject(npen);
+			ReleaseDC(g_hWnd, hdc);
 		}
 	}
 
-
+	/*
 	do {
 		ti = GetTickCount64() - scr_check_time;
 		if ( ti + 100 < 10000) // 최근에 이벤트가 발생했으면 continue
@@ -647,6 +718,7 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 		InvalidateRect(0, NULL, true);
 		ReleaseDC(g_hWnd,hdc);
 	} while(true);
+	*/
 	return 0;
 }
 

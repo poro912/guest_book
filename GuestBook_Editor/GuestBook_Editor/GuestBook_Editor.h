@@ -32,7 +32,7 @@ void Scr_Creitical_flag(bool flag);
 #define Window_Size_Width 1370                  // 윈도우 넓이
 #define Window_Size_Height 900                  // 윈도우 높이
 
-#define SRC_TIME 30000							// 30초
+#define SRC_TIME 3000							// 30초
 
 #define RAINBOW 1
 
