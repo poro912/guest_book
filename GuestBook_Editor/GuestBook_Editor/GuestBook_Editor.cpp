@@ -147,6 +147,7 @@ CRITICAL_SECTION cs;
 bool is_terminate = false;
 CRITICAL_SECTION scr_cs;
 bool is_save = false;
+long long scr_save_time;
 
 //GB_BUTTON* btn_test = new GB_BUTTON(L"테스트", 50, 30, 150, 50);
 
@@ -159,6 +160,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	// PEN
 	static GB_Pen* pen;
 	static INT_PTR dialog= 0;
+	static UINT rainbow_timer = NULL;
 	
 	//HDC hdc;
 	COLORREF ret;
@@ -186,9 +188,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		palette = new Palette(Palette_x, Palette_y);
 		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height, Pen_text_x, Pen_text_y, Pen_size);
 
-		//SetTimer(hWnd, ScrnCheck_Timer, 1000, NULL);
-		SetTimer(hWnd, ScrnSave_Timer, 5000, NULL);
-
 		font = CreateFont(35, 0, 0, 0, 0, 0, 0, 0,
 			HANGEUL_CHARSET, 0, 0, 0,
 			VARIABLE_PITCH | FF_ROMAN, TEXT("굴림"));
@@ -214,6 +213,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		scr_check_time = GetTickCount64();
 		CreateThread(NULL, 0, Scr_Save_thread, nullptr, 0, NULL);
+		scr_save_time = SRC_TIME;
 		break;
 	}
 	
@@ -242,7 +242,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_RainBow:
 		{
 			// Rainbow 펜 
-			SetTimer(hWnd, RAINBOW, 1000, NULL);
+			if(rainbow_timer == NULL)
+				rainbow_timer = SetTimer(hWnd, RAINBOW, 50, NULL);
+			else
+			{
+				KillTimer(hWnd, RAINBOW);
+				rainbow_timer = NULL;
+			}
+				
 
 			return 0;
 		}
@@ -276,27 +283,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
-		case WM_TIMER:
-		{
-			switch (wParam)
-			{
-			case RAINBOW:
-			{
-				static int i = 3; //~ 11
-				if (false) // rainbow 종료 신호
-				{
-					KillTimer(hWnd, RAINBOW);
-				}
-				pen->set_color(cols[i]);
-				InvalidateRect(hWnd, &palette->btn_ran.rect, true);
-				InvalidateRect(hWnd, &pen->area, true);
-				i = ((i + 1) % 9) + 3;
-				break;
-			}
-			default:
-				break;
-			}
-		}
 		case IDM_LOAD:
 		{
 			OPENFILENAME OFN;
@@ -329,6 +315,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
+	}
+
+	case WM_TIMER:
+	{
+		switch (wParam)
+		{
+		case RAINBOW:
+		{
+			static int i = 0; // 3 ~ 11
+			pen->set_color(cols[i+3]);
+			InvalidateRect(hWnd, &palette->btn_ran.rect, true);
+			InvalidateRect(hWnd, &pen->area, true);
+			i = (i + 1) % 9;
+			break;
+		}
+		default:
+			break;
+		}
 	}
 	case WM_PAINT:
 	{
@@ -369,10 +373,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			pen->set_color(ret);
 			InvalidateRect(hWnd, &pen->area, TRUE);
+			KillTimer(hWnd, RAINBOW);
+			rainbow_timer = NULL;
+			break;
 		}
 
 		// 버튼이 눌렸는지 확인 및 버튼 처리
-		switch (button_check(lParam))
+		ret = button_check(lParam);
+		do {
+			if (ret == 0)
+				break;
+			if (ret == PLUS)
+				break;
+			if (ret == MINUS)
+				break;
+			KillTimer(hWnd, RAINBOW);
+			rainbow_timer = NULL;
+			break;
+		} while (true);
+
+		switch (ret)
 		{
 		case 0:
 			break;
@@ -390,7 +410,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			OFN.lpstrFile = file_name;
 			*/
 			GetOpenFileName(&OFN);
-
+			
 			break;
 		}
 		case REPLAY:
@@ -426,6 +446,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case CREDIT :
 			dialog = DialogBox(hInst, MAKEINTRESOURCE(IDM_CREDITS), hWnd, About);
+			KillTimer(hWnd, RAINBOW);
+			rainbow_timer = NULL;
 			break;
 		default:
 			break;
@@ -494,14 +516,14 @@ DWORD WINAPI drawing(LPVOID points)
 			if (is_terminate)
 				break;
 			
+			DeleteObject(npen);
+			npen = CreatePen(PS_SOLID, g_SPinfo.pinfo[i].cWidth, g_SPinfo.pinfo[i].color);
+			SelectObject(hdc, npen);
+
 			switch (g_SPinfo.pinfo[i].state)
 			{
 			case WM_LBUTTONDOWN:
 				//MessageBox(hWnd, L"실행", L"L버튼", MB_OK);
-				DeleteObject(npen);
-				npen = CreatePen(PS_SOLID, g_SPinfo.pinfo[i].cWidth, g_SPinfo.pinfo[i].color);
-				SelectObject(hdc, npen);
-
 				x = LOWORD(g_SPinfo.pinfo[i].lparm);
 				y = HIWORD(g_SPinfo.pinfo[i].lparm);
 
@@ -548,11 +570,13 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 {
 	static vector<PINFO> temp_pinfo;
 	static HDC hdc;
+	static RECT window = {0};
 	// 화면 영역을 전체 화면 영역으로 전환
 	// hWnd 0 에 전체영역으로 칠하기
 	//GetWindowRect(0, window);
 	// 그대로 그리기 기능 실행
 	// 그리기 완성 시 3초 대기
+	GetWindowRect(0, &window);
 	temp_pinfo = g_SPinfo.pinfo;
 	long long ti;
 	while (true)
@@ -560,13 +584,14 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 		while (GetTickCount64() - scr_check_time+100 > SRC_TIME)
 		{
 			Scr_Creitical_flag(true);
-			hdc = GetDC(g_hWnd);
+			//hdc = GetDC(g_hWnd);
+			hdc = GetDC(0);
 
-			Rectangle(hdc, 0, 0, Window_Size_Width, Window_Size_Height);
+			Rectangle(hdc, 0, 0, window.right, window.bottom);
 			ReleaseDC(g_hWnd, hdc);
 
 			// 기존 그림 그리기
-
+			
 			// 랜덤으로 파일 받아오기
 
 			// 3초 기다리기
@@ -576,7 +601,7 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 				InvalidateRect(0, NULL, true);
 				break;
 			}
-				
+			//temp_pinfo =
 		}
 	}
 
@@ -590,7 +615,8 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 		}
 			
 		Scr_Creitical_flag(true);
-		hdc = GetDC(g_hWnd);
+		//hdc = GetDC(g_hWnd);
+		hdc = GetDC(0);
 		Rectangle(hdc, 0, 0, 400, 400);
 		while (is_save)
 		{
@@ -763,16 +789,19 @@ void mouse_paint(HDC hdc)
 	int x, y;
 	npen = CreatePen(PS_SOLID,5,RGB(255, 255, 255));
 	open = (HPEN)SelectObject(hdc, npen);
-	DeleteObject(npen);
 	for (const auto& i : g_SPinfo.pinfo)
 	{
 		x = LOWORD(i.lparm);
 		y = HIWORD(i.lparm);
+
+		DeleteObject(npen);
+		npen = CreatePen(PS_SOLID, i.cWidth, i.color);
+		SelectObject(hdc, npen);
+
 		switch (i.state)
 		{
 		case WM_LBUTTONDOWN:
-			npen = CreatePen(PS_SOLID, i.cWidth, i.color);
-			SelectObject(hdc, npen);
+			
 			MoveToEx(hdc, x, y, NULL);
 			LineTo(hdc, x, y + 1);
 			left = true;
@@ -782,7 +811,6 @@ void mouse_paint(HDC hdc)
 			break;
 		case WM_LBUTTONUP:
 			left = false;
-			DeleteObject(npen);
 			break;
 		default:
 			break;

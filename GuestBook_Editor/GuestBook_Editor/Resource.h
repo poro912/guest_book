@@ -33,6 +33,12 @@
 #define ID                              32783
 #define IDD                             32784
 #define IDM_Screen_save                 32785
+#define ID_32786                        32786
+#define ID_32787                        32787
+#define ID_32788                        32788
+#define ID_32789                        32789
+#define ID_32790                        32790
+#define ID_32791                        32791
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
@@ -41,7 +47,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        133
-#define _APS_NEXT_COMMAND_VALUE         32786
+#define _APS_NEXT_COMMAND_VALUE         32792
 #define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
