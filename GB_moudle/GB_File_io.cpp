@@ -33,12 +33,12 @@ bool file_save(const SPINFO& info_vector, const wchar_t* path)
 
 bool file_load(SPINFO& info_vector, const wchar_t* path)
 {
-	//wchar_t path[100];
+	wchar_t dir[100];
 	fstream fs;
 
-	//wsprintf(path, L"%s/%s.txt", FILE_PATH, name);
+	//wsprintf(dir, L"%s/%s", FILE_PATH, path);
 
-	//MessageBox(0, path, L"불러오기 경로", MB_OK);
+	//MessageBox(0, dir, L"불러오기 경로", MB_OK);
 
 	fs.open(path, ios::in);
 	if (fs.fail())	// 파일열기에 실패한 경우

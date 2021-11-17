@@ -45,17 +45,17 @@ void Scr_Creitical_flag(bool flag);
 #define BOUNDARY_BOTTOM 800
 
 // 팔레트
-#define Palette_x 72
-#define Palette_y 32
+#define Palette_x 71
+#define Palette_y 77
 
 // 펜
 #define Pen_x 820		// 펜 상태 출력창 위치
-#define Pen_y 25
+#define Pen_y 65
 #define Pen_width 200
 #define Pen_height 50
 
-#define Pen_text_x 700	// 폰트 사이즈 출력 위치
-#define Pen_text_y 35
+#define Pen_text_x 702	// 폰트 사이즈 출력 위치
+#define Pen_text_y 75
 #define Pen_size 30		// 폰트사이즈
 
 
@@ -63,37 +63,37 @@ void Scr_Creitical_flag(bool flag);
 #define PLUS 1001
 #define PLUS_text L"+"	// ┼로 출력시 오류
 #define PLUS_x 750
-#define PLUS_y 30
+#define PLUS_y 75
 #define PLUS_size 40
 
 // - 버튼
 #define MINUS 1002
 #define MINUS_text L"─"
 #define MINUS_x 650
-#define MINUS_y 30
+#define MINUS_y 75
 #define MINUS_size 40 
 
 // CLEAR 버튼
 #define CLEAR 1003
 #define CLEAR_text L"CLEAR"
-#define CLEAR_x 1250
-#define CLEAR_y 30
-#define CLEAR_width 100
+#define CLEAR_x 1220
+#define CLEAR_y 75
+#define CLEAR_width 130
 #define CLEAR_height 40
 
 // REPLAY 버튼
 #define REPLAY 1004
 #define REPLAY_text L"REPLAY"
-#define REPLAY_x 1140
-#define REPLAY_y 30
-#define REPLAY_width 100
+#define REPLAY_x 1070
+#define REPLAY_y 75
+#define REPLAY_width 130
 #define REPLAY_height 40
 
 // RANDOM 버튼
 #define RANDOM 1005
 #define RANDOM_text L"RANDOM"
-#define RANDOM_x 220
-#define RANDOM_y 75
+#define RANDOM_x 210
+#define RANDOM_y 30
 #define RANDOM_width 130
 #define RANDOM_height 40
 
@@ -101,10 +101,33 @@ void Scr_Creitical_flag(bool flag);
 #define CREDIT 1006
 #define CREDIT_text L"CREDIT"
 #define CREDIT_x 70
-#define CREDIT_y 75
+#define CREDIT_y 30
 #define CREDIT_width 130
 #define CREDIT_height 40
 
+// SAVE 버튼
+#define SAVE 1007
+#define SAVE_text L"SAVE"
+#define SAVE_x 1070
+#define SAVE_y 30
+#define SAVE_width 130
+#define SAVE_height 40
+
+// LOAD 버튼
+#define LOAD 1008
+#define LOAD_text L"LOAD"
+#define LOAD_x 1220
+#define LOAD_y 30
+#define LOAD_width 130
+#define LOAD_height 40
+
+// RAINBOW 버튼
+#define RAINBOW_b 1009
+#define RAINBOW_text L"RAINBOW"
+#define RAINBOW_x 350
+#define RAINBOW_y 30
+#define RAINBOW_width 130
+#define RAINBOW_height 40
 
 
 /*

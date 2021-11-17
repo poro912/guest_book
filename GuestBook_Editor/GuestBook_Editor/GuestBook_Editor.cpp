@@ -186,6 +186,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// 스크린 중앙 배치
 		Center_Screen(hWnd, WS_OVERLAPPEDWINDOW, WS_EX_APPWINDOW | WS_EX_WINDOWEDGE);
 		
+		srand(time(NULL));
+
 		g_hWnd = hWnd;
 		palette = new Palette(Palette_x, Palette_y);
 		pen = new GB_Pen(Pen_x, Pen_y, Pen_width, Pen_height, Pen_text_x, Pen_text_y, Pen_size);
@@ -203,6 +205,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		buttons.push_back(new GB_BUTTON(REPLAY_text, REPLAY, REPLAY_x, REPLAY_y, REPLAY_width, REPLAY_height));
 		buttons.push_back(new GB_BUTTON(RANDOM_text, RANDOM, RANDOM_x, RANDOM_y, RANDOM_width, RANDOM_height));
 		buttons.push_back(new GB_BUTTON(CREDIT_text, CREDIT, CREDIT_x, CREDIT_y, CREDIT_width, CREDIT_height));
+		buttons.push_back(new GB_BUTTON(SAVE_text, SAVE, SAVE_x, SAVE_y, SAVE_width, SAVE_height));
+		buttons.push_back(new GB_BUTTON(LOAD_text, LOAD, LOAD_x, LOAD_y, LOAD_width, LOAD_height));
+		buttons.push_back(new GB_BUTTON(RAINBOW_text, RAINBOW_b, RAINBOW_x, RAINBOW_y, RAINBOW_width, RAINBOW_height));
 
 		g_SPinfo.x = BOUNDARY_LEFT;
 		g_SPinfo.y = BOUNDARY_TOP;
@@ -419,23 +424,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		case 0:
 			break;
-		case 100:
-		{
-			//TEST 버튼
-			//is_scrSave = true;
-			OPENFILENAME OFN;
-			wchar_t file_name (200);
-			memset(&OFN, 0, sizeof(OFN));
-			/*
-			OFN.lStructSize(OFN);
-			OFN.hwndOwner = hWnd;
-			OFN.lpstrFilter = "모든 파일(*.*)\0*.*\0";
-			OFN.lpstrFile = file_name;
-			*/
-			GetOpenFileName(&OFN);
-			
-			break;
-		}
 		case REPLAY:
 			if (replay_thread == nullptr)	// 생성되어있지 않다면
 			{
@@ -471,6 +459,74 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			dialog = DialogBox(hInst, MAKEINTRESOURCE(IDM_CREDITS), hWnd, About);
 			KillTimer(hWnd, RAINBOW);
 			rainbow_timer = NULL;
+			break;
+		case SAVE :
+		{
+			OPENFILENAME OFN;
+			wchar_t str[256] = { 0, };
+			wchar_t file_name[256] = L"";
+			memset(&OFN, 0, sizeof(OPENFILENAME));
+
+			OFN.lStructSize = sizeof(OPENFILENAME);
+			OFN.hwndOwner = hWnd;
+			OFN.lpstrFilter = L"모든 파일(*.*)\0*.*\0";
+			OFN.lpstrFile = file_name;
+			OFN.nMaxFile = 256;
+
+
+			if (GetSaveFileName(&OFN) != 0)
+			{
+				//wsprintf(str, L"%s파일을 선택했습니다.", OFN.lpstrFile);
+				//MessageBox(hWnd, str, L"파일 열기 성공", MB_OK);
+				wsprintf(str, L"%s", OFN.lpstrFile);
+				if (file_save(g_SPinfo, str))
+					MessageBox(hWnd, str, L"파일 저장 성공", MB_OK);
+				else
+					MessageBox(hWnd, L"실패", L"파일 저장 실패", MB_OK);
+			}
+			else
+			{
+				MessageBox(hWnd, L"실패", L"파일 저장 실패", MB_OK);
+			}
+			break;
+		}
+		case LOAD:
+		{
+			OPENFILENAME OFN;
+			wchar_t str[256] = { 0, };
+			wchar_t file_name[256] = { 0, };
+			memset(&OFN, 0, sizeof(OPENFILENAME));
+
+			OFN.lStructSize = sizeof(OPENFILENAME);
+			OFN.hwndOwner = hWnd;
+			OFN.lpstrFilter = L"모든 파일(*.*)\0*.*\0";
+			OFN.lpstrFile = file_name;
+			OFN.nMaxFile = 256;
+
+			if (GetOpenFileName(&OFN) != 0)
+			{
+				wsprintf(str, L"%s", OFN.lpstrFile);
+				if (file_load(g_SPinfo, str))
+					MessageBox(hWnd, str, L"파일 열기 성공", MB_OK);
+				else
+					MessageBox(hWnd, L"실패", L"파일 열기 실패", MB_OK);
+			}
+			else
+			{
+				MessageBox(hWnd, L"실패", L"파일 열기 실패", MB_OK);
+			}
+			InvalidateRect(NULL, NULL, true);
+			break;
+		}
+			break;
+		case RAINBOW_b:
+			if (rainbow_timer == NULL)
+				rainbow_timer = SetTimer(hWnd, RAINBOW, 50, NULL);
+			else
+			{
+				KillTimer(hWnd, RAINBOW);
+				rainbow_timer = NULL;
+			}
 			break;
 		default:
 			break;
@@ -621,7 +677,7 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 
 	while (true)
 	{
-		while (GetTickCount64() - scr_check_time+50>= scr_save_time)
+		while (GetTickCount64() - scr_check_time + 50 >= (long long)scr_save_time)
 		{
 			Scr_Creitical_flag(true);
 			scr_start_time = GetTickCount64();
@@ -696,8 +752,8 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 						SelectObject(hdc, npen);
 
 						//x = (LOWORD(temp_spinfo.pinfo[i].lparm)-temp_spinfo.x) * (float)GetSystemMetrics(SM_CXSCREEN) / (float)temp_spinfo.width;
-						x = (LOWORD(temp_spinfo.pinfo[i].lparm) - temp_spinfo.x) * (float)GetSystemMetrics(SM_CXSCREEN) / (float)temp_spinfo.width/2;
-						y = (HIWORD(temp_spinfo.pinfo[i].lparm)-temp_spinfo.y) * (float)GetSystemMetrics(SM_CYSCREEN) / (float)temp_spinfo.height * 1.7;
+						x = (int)((LOWORD(temp_spinfo.pinfo[i].lparm) - temp_spinfo.x) * (float)GetSystemMetrics(SM_CXSCREEN) / (float)temp_spinfo.width / 2L);
+						y = (int)((HIWORD(temp_spinfo.pinfo[i].lparm)-temp_spinfo.y) * (float)GetSystemMetrics(SM_CYSCREEN) / (float)temp_spinfo.height * 1.7);
 						
 						switch (temp_spinfo.pinfo[i].state)
 						{
@@ -761,50 +817,6 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 			}
 		}
 	}
-
-	/*
-	do {
-		ti = GetTickCount64() - scr_check_time;
-		if ( ti + 100 < 10000) // 최근에 이벤트가 발생했으면 continue
-		{
-			Sleep(100);
-			continue;
-		}
-			
-		Scr_Creitical_flag(true);
-		//hdc = GetDC(g_hWnd);
-		hdc = GetDC(0);
-		Rectangle(hdc, 0, 0, 400, 400);
-		while (is_save)
-		{
-			if (GetTickCount64() - scr_check_time < SRC_TIME) // 최근에 이벤트가 발생했다면
-				Scr_Creitical_flag(false); // 종료
-			
-			for (const auto& i : g_SPinfo.pinfo)	// 그리는 부분
-			{
-				if (!is_save)
-					break;
-			}
-
-			while (GetTickCount64() - scr_check_time > 300)	// 3초 대기
-			{
-				Sleep(10);
-				if (!is_save)
-					break;
-			}
-
-			// 다음 그림 불러오기 temp_pinfo
-			temp_pinfo.clear();
-			if (!is_save)
-				break;
-			// 파일 입출력으로 그릴 그림을 가져오기
-			// 다음 그림을 불러와서 그리기 시작
-		}
-		// 종료신호 발생 시 화면을 원래 크기로 전환
-		InvalidateRect(0, NULL, true);
-		ReleaseDC(g_hWnd,hdc);
-	} while(true);
-	*/
 	return 0;
 }
 
@@ -1014,6 +1026,7 @@ void Critical_flag(bool flag)
 
 void Scr_Creitical_flag(bool flag)
 {
+	
 	if (is_save == true && flag == false)
 	{
 		EndDialog(End_Credit, LOWORD(1));
