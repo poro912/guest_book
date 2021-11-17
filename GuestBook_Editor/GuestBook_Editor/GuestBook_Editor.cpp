@@ -148,6 +148,9 @@ bool is_terminate = false;
 CRITICAL_SECTION scr_cs;
 bool is_save = false;
 long long scr_save_time;
+long long scr_start_time;
+
+UINT rainbow_timer = NULL;
 
 //GB_BUTTON* btn_test = new GB_BUTTON(L"테스트", 50, 30, 150, 50);
 
@@ -160,8 +163,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	// PEN
 	static GB_Pen* pen;
 	static INT_PTR dialog= 0;
-	static UINT rainbow_timer = NULL;
-	
 	//HDC hdc;
 	COLORREF ret;
 	//PINFO temp_pinfo;
@@ -173,8 +174,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_GETMINMAXINFO: // 윈도우 창 크기 고정
 	{
-		((MINMAXINFO*)lParam)->ptMaxTrackSize.x = Window_Size_Width;
-		((MINMAXINFO*)lParam)->ptMaxTrackSize.y = Window_Size_Height;
+
+		//((MINMAXINFO*)lParam)->ptMaxTrackSize.x = Window_Size_Width;
+		//((MINMAXINFO*)lParam)->ptMaxTrackSize.y = Window_Size_Height;
 		((MINMAXINFO*)lParam)->ptMinTrackSize.x = Window_Size_Width;
 		((MINMAXINFO*)lParam)->ptMinTrackSize.y = Window_Size_Height;
 		break;
@@ -194,7 +196,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		win_brush = CreateSolidBrush(WINDOW_COLOR);
 
 		//버튼 생성 및 할당
-		buttons.push_back(new GB_BUTTON(L"테스트", 100, 50, 200, 150, 50));
+		//buttons.push_back(new GB_BUTTON(L"테스트", 100, 50, 200, 150, 50));
 		buttons.push_back(new GB_BUTTON(L"┼", PLUS, PLUS_x, PLUS_y, PLUS_size));
 		buttons.push_back(new GB_BUTTON(MINUS_text, MINUS, MINUS_x, MINUS_y, MINUS_size));
 		buttons.push_back(new GB_BUTTON(CLEAR_text, CLEAR, CLEAR_x, CLEAR_y, CLEAR_width, CLEAR_height));
@@ -330,6 +332,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_30min:
 			scr_save_time = 30 * 60 * 1000;
 			break;
+		case IDM_save_enable:
+			scr_save_time = 99999999;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -473,8 +477,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 
 	case WM_MOUSEMOVE:
-		Scr_Creitical_flag(false);	// 마우스 관련 이벤트 발생시 false 로 만듦
-		scr_check_time = GetTickCount64();
+		if (GetTickCount64() - scr_start_time > 300)	// 화면보호기 시작 후 0.5 초 동안 무효화
+		{
+			Scr_Creitical_flag(false);	// 마우스 관련 이벤트 발생시 false 로 만듦
+			scr_check_time = GetTickCount64();
+		}
+		
 	case WM_LBUTTONUP:
 		
 		mouse_proc(hWnd, message, lParam, pen->size, pen->col);
@@ -590,95 +598,167 @@ DWORD WINAPI drawing(LPVOID points)
 // 화면보호기 
 DWORD WINAPI Scr_Save_thread(LPVOID points)
 {
+	vector<WCHAR*> file_list;
 	static SPINFO temp_spinfo;
 	static HDC hdc;
 	static RECT window = {0};
 	HBRUSH nbrush;
 	HPEN npen;
+	RECT win = {0,};
+
+	
+	HANDLE hFind;
+	WIN32_FIND_DATAW data = { 0, };
+
 	// 화면 영역을 전체 화면 영역으로 전환
 	// hWnd 0 에 전체영역으로 칠하기
 	//GetWindowRect(0, window);
 	// 그대로 그리기 기능 실행
 	// 그리기 완성 시 3초 대기
 	temp_spinfo = g_SPinfo;
-	long long ti;
 	int x, y;
+
 
 	while (true)
 	{
-		while (GetTickCount64() - scr_check_time >= scr_save_time)
+		while (GetTickCount64() - scr_check_time+50>= scr_save_time)
 		{
 			Scr_Creitical_flag(true);
-			HDC End_Dialog_hdc = GetDC(g_hWnd);
-			hdc = GetDC(0);
-			nbrush = CreateSolidBrush(WINDOW_COLOR);
-			npen = CreatePen(PS_SOLID, 1, WINDOW_COLOR);
-			SelectObject(hdc,nbrush);
-			SelectObject(hdc, npen);
-			Rectangle(hdc, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+			scr_start_time = GetTickCount64();
+			temp_spinfo.pinfo.clear();
+
+			KillTimer(g_hWnd, RAINBOW);
+			rainbow_timer = NULL;
+
+			ShowWindow(g_hWnd, SW_MAXIMIZE);	// 윈도우 최대화
+			GetWindowRect(g_hWnd, &win);			// 윈도우 크기 구하기
+			Sleep(200);
+
+			// 파일 받아오기
+			file_list.clear();
+			hFind = FindFirstFileW(L"..//..//page//*", &data);
+			FindNextFileW(hFind, &data);
+			//FindNextFileW(hFind, &data);
+			while (FindNextFileW(hFind, &data))
+			{
+				WCHAR* temp;
+				temp = new WCHAR[50];
+				wcscpy(temp, data.cFileName);
+				file_list.push_back(temp);
+				//MessageBox(0, data.cFileName, L"저장 경로", MB_OK);
+			}
+			FindClose(hFind);
 
 			// 화면보호기 실행
-			while (true)
+			while(true)
 			{
+				SetFocus(g_hWnd);// 포커스 이동
 
-				if (temp_spinfo.pinfo.size() == 0) break;
-				if (!is_save) break;
-				
-				for (size_t i = 0; i < (int)(temp_spinfo.pinfo.size() - 1); i++)
+				hdc = GetDC(0);
+				nbrush = CreateSolidBrush(WINDOW_COLOR);
+				npen = CreatePen(PS_SOLID, 1, WINDOW_COLOR);
+				SelectObject(hdc, nbrush);
+				SelectObject(hdc, npen);
+				Rectangle(hdc, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+				ReleaseDC(0, hdc);
+
+				hdc = GetDC(g_hWnd);
+				SelectObject(hdc, nbrush);
+				SelectObject(hdc, npen);
+				Rectangle(hdc, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+
+				if (temp_spinfo.pinfo.size() == 0)// 화면 보호기가 작동하고 처음이라면 
+					temp_spinfo = g_SPinfo;
+
+				if (temp_spinfo.pinfo.empty())
 				{
-					if (is_terminate)
-						break;
-					
-					DeleteObject(npen);
-					npen = CreatePen(PS_SOLID, temp_spinfo.pinfo[i].cWidth, temp_spinfo.pinfo[i].color);
-					SelectObject(hdc, npen);
-
-					switch (temp_spinfo.pinfo[i].state)
+					if (!file_list.empty())
 					{
-					case WM_LBUTTONDOWN:
-						x = LOWORD(temp_spinfo.pinfo[i].lparm);
-						y = HIWORD(temp_spinfo.pinfo[i].lparm);
-
-						MoveToEx(hdc, x, y, NULL);
-						LineTo(hdc, x, y + 1);
-						break;
-
-					case WM_MOUSEMOVE:
-						LineTo(hdc, LOWORD(temp_spinfo.pinfo[i].lparm), HIWORD(temp_spinfo.pinfo[i].lparm));
-
-						break;
-					case WM_LBUTTONUP:
-						LineTo(hdc, LOWORD(temp_spinfo.pinfo[i].lparm), HIWORD(temp_spinfo.pinfo[i].lparm));
-						break;
-
-					default:
-						break;
-					}
-					if (temp_spinfo.pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
-					{
-						Sleep(temp_spinfo.pinfo[i + 1].ctime - temp_spinfo.pinfo[i].ctime);
+						int i = rand() % file_list.size();
+						WCHAR path[80];
+						wcscpy(path, FILE_PATH);
+						wcscat(path, L"/");
+						wcscat(path, file_list[i]);
+						file_load(temp_spinfo, path);
 					}
 				}
-			}
-			// 랜덤으로 파일 받아오기
 
-			// 3초 기다리기
-			for (size_t i = 0; i < 30; i++)
-			{
-				Sleep(100);
-				if (!is_save)
-					break;
-			}
+				if (!is_save) break;	// 화면 보호기 탈출
+				
+				if (!temp_spinfo.pinfo.empty())	// 화면또는 파일중 하나라도 있으면 출력
+				{
+					for (size_t i = 0; i < temp_spinfo.pinfo.size() - 1; i++)
+					{
+						if (!is_save) break;
 
-			if (!is_save)
+						DeleteObject(npen);
+						npen = CreatePen(PS_SOLID, temp_spinfo.pinfo[i].cWidth, temp_spinfo.pinfo[i].color);
+						SelectObject(hdc, npen);
+
+						//x = (LOWORD(temp_spinfo.pinfo[i].lparm)-temp_spinfo.x) * (float)GetSystemMetrics(SM_CXSCREEN) / (float)temp_spinfo.width;
+						x = (LOWORD(temp_spinfo.pinfo[i].lparm) - temp_spinfo.x) * (float)GetSystemMetrics(SM_CXSCREEN) / (float)temp_spinfo.width/2;
+						y = (HIWORD(temp_spinfo.pinfo[i].lparm)-temp_spinfo.y) * (float)GetSystemMetrics(SM_CYSCREEN) / (float)temp_spinfo.height * 1.7;
+						
+						switch (temp_spinfo.pinfo[i].state)
+						{
+						case WM_LBUTTONDOWN:
+							MoveToEx(hdc, x, y, NULL);
+							LineTo(hdc, x, y + 1);
+							break;
+
+						case WM_MOUSEMOVE:
+							LineTo(hdc, x, y);
+							break;
+
+						case WM_LBUTTONUP:
+							LineTo(hdc, x, y);
+							break;
+
+						default:
+							break;
+						}
+						if (temp_spinfo.pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
+						{
+							Sleep((temp_spinfo.pinfo[i + 1].ctime - temp_spinfo.pinfo[i].ctime));
+						}
+					}
+				}
+				
+				// 랜덤으로 파일 받아오기
+				if (!file_list.empty())
+				{
+					int i = rand() % file_list.size();
+					WCHAR path[80];
+					wcscpy(path, FILE_PATH);
+					wcscat(path, L"/");
+					wcscat(path, file_list[i]);
+					file_load(temp_spinfo, path);
+				}
+
+				// 3초 기다리기
+				for (size_t i = 0; i < 30; i++)
+				{
+					Sleep(100);
+					if (!is_save)
+						break;
+				}
+				if (!is_save) break;	// 화면 보호기 탈출
+			}
+			if (!is_save)// 화면 보호기 탈출
 			{
+				DeleteObject(nbrush);
+				DeleteObject(npen);
+				ReleaseDC(g_hWnd, hdc);
+
+				ShowWindow(g_hWnd, SW_RESTORE);
 				InvalidateRect(0, NULL, true);
 				break;
 			}
-			//temp_pinfo =
-			DeleteObject(nbrush);
-			DeleteObject(npen);
-			ReleaseDC(g_hWnd, hdc);
+			
+			for (const auto& i : file_list)
+			{
+				delete i;
+			}
 		}
 	}
 
