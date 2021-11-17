@@ -415,6 +415,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				break;
 			if (ret == MINUS)
 				break;
+			if (ret == RAINBOW_b)
+				break;
 			KillTimer(hWnd, RAINBOW);
 			rainbow_timer = NULL;
 			break;
@@ -518,7 +520,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			InvalidateRect(NULL, NULL, true);
 			break;
 		}
-			break;
 		case RAINBOW_b:
 			if (rainbow_timer == NULL)
 				rainbow_timer = SetTimer(hWnd, RAINBOW, 50, NULL);
