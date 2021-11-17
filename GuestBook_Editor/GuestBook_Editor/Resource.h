@@ -28,7 +28,6 @@
 #define IDM_RainBow                     32776
 #define IDM_SAVE                        32777
 #define IDM_LOAD                        32778
-#define IDM_RAINBOW                     32780
 #define IDM_CREDITS                     32781
 #define ID_32782                        32782
 #define ID                              32783

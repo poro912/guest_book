@@ -201,6 +201,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		buttons.push_back(new GB_BUTTON(CLEAR_text, CLEAR, CLEAR_x, CLEAR_y, CLEAR_width, CLEAR_height));
 		buttons.push_back(new GB_BUTTON(REPLAY_text, REPLAY, REPLAY_x, REPLAY_y, REPLAY_width, REPLAY_height));
 		buttons.push_back(new GB_BUTTON(RANDOM_text, RANDOM, RANDOM_x, RANDOM_y, RANDOM_width, RANDOM_height));
+		buttons.push_back(new GB_BUTTON(CREDIT_text, CREDIT, CREDIT_x, CREDIT_y, CREDIT_width, CREDIT_height));
 
 		g_SPinfo.x = BOUNDARY_LEFT;
 		g_SPinfo.y = BOUNDARY_TOP;
@@ -215,6 +216,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		CreateThread(NULL, 0, Scr_Save_thread, nullptr, 0, NULL);
 		break;
 	}
+	
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
@@ -229,23 +231,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			break;
 		case IDM_Screen_save:
 			Scr_Creitical_flag(true);
-			scr_check_time = 0;
-			break;
+			scr_check_time = GetTickCount64() - SRC_TIME;
+			Sleep(50);
+			return 0;
 		case IDM_CREDITS:    //크레딧(C) 클릭시
 		{
 			dialog = DialogBox(hInst, MAKEINTRESOURCE(IDM_CREDITS), hWnd, About);
 			break;
 		}
-	 /* case IDC_NEXT:
-			MessageBox(hWnd,
-				TEXT("졸업을 축하합니다.\n")
-				TEXT("졸업을 축하합니다.\n")
-				TEXT("졸업을 축하합니다.\n"),
-				TEXT("선배님들께 드리는 편지"), MB_OK);
-			break;*/
 		case IDM_RainBow:
 		{
 			// Rainbow 펜 
+			SetTimer(hWnd, RAINBOW, 1000, NULL);
+
 			return 0;
 		}
 		case IDM_SAVE:
@@ -277,6 +275,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				MessageBox(hWnd, L"실패", L"파일 저장 실패", MB_OK);
 			}
 			break;
+		}
+		case WM_TIMER:
+		{
+			switch (wParam)
+			{
+			case RAINBOW:
+			{
+				static int i = 3; //~ 11
+				if (false) // rainbow 종료 신호
+				{
+					KillTimer(hWnd, RAINBOW);
+				}
+				pen->set_color(cols[i]);
+				InvalidateRect(hWnd, &palette->btn_ran.rect, true);
+				InvalidateRect(hWnd, &pen->area, true);
+				i = ((i + 1) % 9) + 3;
+				break;
+			}
+			default:
+				break;
+			}
 		}
 		case IDM_LOAD:
 		{
@@ -404,14 +423,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			pen->set_size_down();
 			InvalidateRect(hWnd, &pen->area, TRUE);
 			InvalidateRect(hWnd, &pen->text_area, TRUE);
+			break;
+		case CREDIT :
+			dialog = DialogBox(hInst, MAKEINTRESOURCE(IDM_CREDITS), hWnd, About);
+			break;
 		default:
 			break;
 		}
 
 	case WM_MOUSEMOVE:
-	case WM_LBUTTONUP:
 		Scr_Creitical_flag(false);	// 마우스 관련 이벤트 발생시 false 로 만듦
 		scr_check_time = GetTickCount64();
+	case WM_LBUTTONUP:
+		
 		mouse_proc(hWnd, message, lParam, pen->size, pen->col);
 		break;
 
@@ -483,7 +507,6 @@ DWORD WINAPI drawing(LPVOID points)
 
 				MoveToEx(hdc, x, y, NULL);
 				LineTo(hdc, x, y + 1);  //점찍기
-				DeleteObject(npen);
 				break;
 
 			case WM_MOUSEMOVE:
@@ -534,14 +557,19 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 	long long ti;
 	while (true)
 	{
-		while (GetTickCount64() - scr_check_time > SRC_TIME)
+		while (GetTickCount64() - scr_check_time+100 > SRC_TIME)
 		{
 			Scr_Creitical_flag(true);
 			hdc = GetDC(g_hWnd);
 
-			Rectangle(hdc, 0, 0, 400, 400);
+			Rectangle(hdc, 0, 0, Window_Size_Width, Window_Size_Height);
 			ReleaseDC(g_hWnd, hdc);
 
+			// 기존 그림 그리기
+
+			// 랜덤으로 파일 받아오기
+
+			// 3초 기다리기
 
 			if (!is_save)
 			{

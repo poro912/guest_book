@@ -3,7 +3,7 @@
 // 메인 로고
 // 메인 시작 X Y 좌표
 #define Main_Logo_X 510
-#define Main_Logo_Y 230
+#define Main_Logo_Y 330
 
 // 메인 크기
 #define Main_Logo_Width 300
@@ -12,7 +12,7 @@
 // 서브 로고
 // 로고 시작 X Y 좌표
 #define Serve_Logo_X 1085
-#define Serve_Logo_Y 545
+#define Serve_Logo_Y 745
 
 // 로고 크기
 #define Serve_Logo_Width 200

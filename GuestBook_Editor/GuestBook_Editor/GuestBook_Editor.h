@@ -29,17 +29,18 @@ void Scr_Creitical_flag(bool flag);
 #ifndef WINDOW_COLOR
 #define WINDOW_COLOR RGB(230,230,230)
 #endif
-#define Window_Size_Width 1370                  //윈도우 넓이
-#define Window_Size_Height 700                  // 윈도우 높이
+#define Window_Size_Width 1370                  // 윈도우 넓이
+#define Window_Size_Height 900                  // 윈도우 높이
 
-#define SRC_TIME 3000
+#define SRC_TIME 30000							// 30초
 
+#define RAINBOW 1
 
 // 서명 영역
 #define BOUNDARY_LEFT 50
 #define BOUNDARY_RIGHT 1300
 #define BOUNDARY_TOP 120
-#define BOUNDARY_BOTTOM 600
+#define BOUNDARY_BOTTOM 800
 
 // 팔레트
 #define Palette_x 735
@@ -92,6 +93,15 @@ void Scr_Creitical_flag(bool flag);
 #define RANDOM_y 75
 #define RANDOM_width 130
 #define RANDOM_height 40
+
+// CREDIT 버튼
+#define CREDIT 1006
+#define CREDIT_text L"CREDIT"
+#define CREDIT_x 970
+#define CREDIT_y 75
+#define CREDIT_width 130
+#define CREDIT_height 40
+
 
 
 /*
