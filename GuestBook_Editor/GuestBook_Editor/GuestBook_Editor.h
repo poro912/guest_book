@@ -32,7 +32,7 @@ void Scr_Creitical_flag(bool flag);
 #define Window_Size_Width 1370                  // 윈도우 넓이
 #define Window_Size_Height 900                  // 윈도우 높이
 
-#define SRC_TIME 3000							// 30초
+#define SRC_TIME 30000							// 30초
 
 #define RAINBOW 1
 
@@ -43,15 +43,15 @@ void Scr_Creitical_flag(bool flag);
 #define BOUNDARY_BOTTOM 800
 
 // 팔레트
-#define Palette_x 735
-#define Palette_y 35
+#define Palette_x 50
+#define Palette_y 15
 
 // 펜
-#define Pen_x 500
+#define Pen_x 840
 #define Pen_y 30
 #define Pen_width 200
 #define Pen_height 50
-#define Pen_text_x 370
+#define Pen_text_x 700
 #define Pen_text_y 40
 #define Pen_size 30		//폰트사이즈
 
@@ -59,21 +59,21 @@ void Scr_Creitical_flag(bool flag);
 // +버튼
 #define PLUS 1001
 #define PLUS_text L"+"	//┼로 출력시 오류
-#define PLUS_x 420
+#define PLUS_x 750
 #define PLUS_y 35
 #define PLUS_size 40
 
 // - 버튼
 #define MINUS 1002
 #define MINUS_text L"─"
-#define MINUS_x 315 
+#define MINUS_x 650 
 #define MINUS_y 35
 #define MINUS_size 40 
 
 // CLEAR 버튼
 #define CLEAR 1003
 #define CLEAR_text L"CLEAR"
-#define CLEAR_x 160
+#define CLEAR_x 1190
 #define CLEAR_y 35
 #define CLEAR_width 100
 #define CLEAR_height 40
@@ -81,7 +81,7 @@ void Scr_Creitical_flag(bool flag);
 // REPLAY 버튼
 #define REPLAY 1004
 #define REPLAY_text L"REPLAY"
-#define REPLAY_x 50
+#define REPLAY_x 1070
 #define REPLAY_y 35
 #define REPLAY_width 100
 #define REPLAY_height 40
@@ -89,16 +89,16 @@ void Scr_Creitical_flag(bool flag);
 // RANDOM 버튼
 #define RANDOM 1005
 #define RANDOM_text L"RANDOM"
-#define RANDOM_x 1170
-#define RANDOM_y 75
+#define RANDOM_x 200
+#define RANDOM_y 55
 #define RANDOM_width 130
 #define RANDOM_height 40
 
 // CREDIT 버튼
 #define CREDIT 1006
 #define CREDIT_text L"CREDIT"
-#define CREDIT_x 970
-#define CREDIT_y 75
+#define CREDIT_x 50
+#define CREDIT_y 55
 #define CREDIT_width 130
 #define CREDIT_height 40
 

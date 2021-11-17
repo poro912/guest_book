@@ -9,7 +9,7 @@
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
-bool ScrnSaveCheck = false;						// 화면이 보호중인지 체크합니다.
+HWND End_Credit;
 
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -493,9 +493,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+
 // 정보 대화 상자의 메시지 처리기입니다.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	End_Credit = hDlg;
+
 	UNREFERENCED_PARAMETER(lParam);
 	switch (message)
 	{
@@ -606,7 +609,7 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 		while (GetTickCount64() - scr_check_time >= scr_save_time)
 		{
 			Scr_Creitical_flag(true);
-			//hdc = GetDC(g_hWnd);
+			HDC End_Dialog_hdc = GetDC(g_hWnd);
 			hdc = GetDC(0);
 			nbrush = CreateSolidBrush(WINDOW_COLOR);
 			npen = CreatePen(PS_SOLID, 1, WINDOW_COLOR);
@@ -617,13 +620,15 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 			// 화면보호기 실행
 			while (true)
 			{
+
 				if (temp_spinfo.pinfo.size() == 0) break;
 				if (!is_save) break;
+				
 				for (size_t i = 0; i < (int)(temp_spinfo.pinfo.size() - 1); i++)
 				{
 					if (is_terminate)
 						break;
-
+					
 					DeleteObject(npen);
 					npen = CreatePen(PS_SOLID, temp_spinfo.pinfo[i].cWidth, temp_spinfo.pinfo[i].color);
 					SelectObject(hdc, npen);
@@ -664,6 +669,7 @@ DWORD WINAPI Scr_Save_thread(LPVOID points)
 				if (!is_save)
 					break;
 			}
+
 			if (!is_save)
 			{
 				InvalidateRect(0, NULL, true);
@@ -928,11 +934,23 @@ void Critical_flag(bool flag)
 
 void Scr_Creitical_flag(bool flag)
 {
+	if (is_save == true && flag == false)
+	{
+		EndDialog(End_Credit, LOWORD(1));
+	}
+
 	if (is_save == flag)
+	{
 		return;
+	}
+
 	EnterCriticalSection(&scr_cs);
 	is_save = flag;
+
 	if (flag == true)
+	{
 		Critical_flag(true);
+	}
+
 	LeaveCriticalSection(&scr_cs);
 }

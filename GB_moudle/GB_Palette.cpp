@@ -43,7 +43,7 @@ Palette::Palette(int x, int y)
 
 Palette::~Palette()
 {
-    for (auto i :btns)
+    for (auto &i :btns)
     {
         DeleteObject(i.brsh);
         DeleteObject(i.pen);
@@ -62,7 +62,7 @@ void Palette::paint(HWND hWnd, HDC hdc)
     open = (HPEN)SelectObject(hdc, this->pen);
     obrush = (HBRUSH)SelectObject(hdc, btns[0].brsh);
     SelectObject(hdc, this->pen);
-    for (auto i : btns)
+    for (auto &i : btns)
     {
         SelectObject(hdc, i.brsh);
         Rectangle(hdc, i.rect.left, i.rect.top, i.rect.right, i.rect.bottom);
