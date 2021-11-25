@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -21,9 +21,10 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{f472ed3d-a7bf-4d2d-8c8e-7e581a749494}</ProjectGuid>
-    <RootNamespace>GuestBookViewer</RootNamespace>
+    <ProjectGuid>{9412079e-d8a1-491a-bbd6-75cef2548582}</ProjectGuid>
+    <RootNamespace>GuestBookEditor</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Viewer</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -85,7 +86,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
@@ -113,7 +114,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
@@ -145,8 +146,10 @@
     <ClInclude Include="..\..\GB_moudle\GB_FIle_io.h" />
     <ClInclude Include="..\..\GB_moudle\GB_moudles.h" />
     <ClInclude Include="..\..\GB_moudle\GB_palette.h" />
+    <ClInclude Include="..\..\GB_moudle\GB_Sscreen_Save.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="GuestBook_Viewer.h" />
+    <ClInclude Include="Viewer.h" />
+    <ClInclude Include="..\..\GB_moudle\GB_Image.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -154,16 +157,19 @@
     <ClCompile Include="..\..\GB_moudle\GB.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_Button.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_File_io.cpp" />
+    <ClCompile Include="..\..\GB_moudle\GB_Image.cpp" />
     <ClCompile Include="..\..\GB_moudle\GB_Palette.cpp" />
-    <ClCompile Include="GuestBook_Viewer.cpp" />
+    <ClCompile Include="..\..\GB_moudle\GB_Sscreen_Save.cpp" />
+    <ClCompile Include="Viewer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="GuestBook_Viewer.rc" />
+    <ResourceCompile Include="GuestBook_Editor.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\Image\logo.bmp" />
     <Image Include="..\..\Image\Main_logo.bmp" />
     <Image Include="..\..\Image\Serve_logo.bmp" />
-    <Image Include="GuestBook_Viewer.ico" />
+    <Image Include="GuestBook_Editor.ico" />
     <Image Include="small.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

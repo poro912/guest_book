@@ -21,7 +21,7 @@
 
 // 로고 시작 X Y 좌표
 #define Serve_Logo_X 1420 - Serve_Logo_Width - 100
-#define Serve_Logo_Y 900 - Serve_Logo_Height - 10
+#define Serve_Logo_Y 900 - Serve_Logo_Height - 10 - 200
 
 
 // 로그 투명도

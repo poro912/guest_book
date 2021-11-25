@@ -125,6 +125,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    case WM_CREATE:
+    {
+
+    }
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -177,4 +182,74 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     return (INT_PTR)FALSE;
+}
+
+
+// 리플레이 스레드
+DWORD WINAPI drawing(LPVOID points)
+{
+    HDC hdc;
+    HPEN npen;
+    int x, y;
+    hdc = GetDC(g_hWnd);
+    is_replay = true;
+
+    npen = CreatePen(PS_SOLID, 10, RGB(255, 255, 255));
+    while (true)
+    {
+        if (g_SPinfo.pinfo.size() == 0) break;
+        if (is_terminate) break;
+        InvalidateRect(g_hWnd, NULL, TRUE);
+        for (size_t i = 0; i < (int)(g_SPinfo.pinfo.size() - 1); i++)
+        {
+            if (is_terminate)
+                break;
+
+            DeleteObject(npen);
+            npen = CreatePen(PS_SOLID, g_SPinfo.pinfo[i].cWidth, g_SPinfo.pinfo[i].color);
+            SelectObject(hdc, npen);
+
+            switch (g_SPinfo.pinfo[i].state)
+            {
+            case WM_LBUTTONDOWN:
+                //MessageBox(hWnd, L"실행", L"L버튼", MB_OK);
+                x = LOWORD(g_SPinfo.pinfo[i].lparm);
+                y = HIWORD(g_SPinfo.pinfo[i].lparm);
+
+                MoveToEx(hdc, x, y, NULL);
+                LineTo(hdc, x, y + 1);  //점찍기
+                break;
+
+            case WM_MOUSEMOVE:
+                LineTo(hdc, LOWORD(g_SPinfo.pinfo[i].lparm), HIWORD(g_SPinfo.pinfo[i].lparm));
+
+                break;
+            case WM_LBUTTONUP:
+                LineTo(hdc, LOWORD(g_SPinfo.pinfo[i].lparm), HIWORD(g_SPinfo.pinfo[i].lparm));
+                break;
+
+            default:
+                break;
+            }
+            if (g_SPinfo.pinfo[i + 1].state == WM_MOUSEMOVE)  // 다음벡터도 WM_MOUSEMOVE일 경우에만 sleep 
+            {
+                Sleep(g_SPinfo.pinfo[i + 1].ctime - g_SPinfo.pinfo[i].ctime);
+            }
+        }
+
+        for (size_t i = 0; i < 300; i++)
+        {
+            Sleep(10);
+            if (is_terminate)
+                break;
+        }
+
+    }
+
+    InvalidateRect(g_hWnd, NULL, TRUE);
+    DeleteObject(npen);
+    ReleaseDC(g_hWnd, hdc);
+    Critical_flag(false);
+    replay_thread = nullptr;
+    return 0;
 }
