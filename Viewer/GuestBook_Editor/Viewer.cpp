@@ -301,7 +301,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				wsprintf(str, L"%s", OFN.lpstrFile);
 				if (file_load(g_SPinfo, str))
 				{
-					MessageBox(hWnd, str, L"파일 열기 성공", MB_OK);
+					//MessageBox(hWnd, str, L"파일 열기 성공", MB_OK);
 					Critical_flag(true);
 				}
 				else
@@ -309,7 +309,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				MessageBox(hWnd, L"실패", L"파일 열기 실패", MB_OK);
+				//MessageBox(hWnd, L"실패", L"파일 열기 실패", MB_OK);
 			}
 			InvalidateRect(NULL, NULL, true);
 			break;
@@ -443,7 +443,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				wsprintf(str, L"%s", OFN.lpstrFile);
 				if (file_load(g_SPinfo, str))
 				{
-					MessageBox(hWnd, str, L"파일 열기 성공", MB_OK);
+					//MessageBox(hWnd, str, L"파일 열기 성공", MB_OK);
 					Critical_flag(true);
 				}
 				else
@@ -451,7 +451,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else
 			{
-				MessageBox(hWnd, L"실패", L"파일 열기 실패", MB_OK);
+				//MessageBox(hWnd, L"실패", L"파일 열기 실패", MB_OK);
 			}
 			InvalidateRect(NULL, NULL, true);
 			break;
