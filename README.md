@@ -1,2 +1,2 @@
 # guest_book
-main repogitory
+main repository
