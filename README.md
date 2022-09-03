@@ -1,2 +1,13 @@
-# guest_book
-main repository
+# GuestBook
+유한대학교 컴퓨터 소프트웨어 공학과 2021학년도 졸업작품전의 축전프로젝트
+방명록작성 프로그램 GuestBook
+(main repository)
+
+## 프로젝트 소개
+
+## 기술 스택
+
+## 구현기능
+
+## 배운점 아쉬운점
+
