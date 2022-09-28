@@ -3,6 +3,7 @@
 #pragma once
 #include "framework.h"
 #include "GuestBook_Editor.h"
+#pragma warning(disable : 4996)
 #define MAX_LOADSTRING 100
 
 // 전역 변수:
